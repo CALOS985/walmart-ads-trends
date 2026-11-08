@@ -1,0 +1,25 @@
+name: 故障反馈 / Bug report
+description: 报告导入、分析或部署问题 / Report an import, analysis or deployment issue
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "请勿上传真实广告报表。示例请替换 Item ID、SKU 和金额。 / Remove real identifiers and amounts from samples."
+  - type: input
+    id: version
+    attributes:
+      label: 版本 / Version
+      placeholder: v1.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤 / Steps to reproduce
+      description: 请说明浏览器、部署方式、操作步骤、预期结果和实际结果。
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: 截图或脱敏示例 / Screenshot or anonymized sample

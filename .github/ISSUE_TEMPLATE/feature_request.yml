@@ -1,0 +1,11 @@
+name: 功能建议 / Feature request
+description: 建议改进看板 / Suggest an improvement
+title: "[Feature] "
+body:
+  - type: textarea
+    id: use_case
+    attributes:
+      label: 使用场景 / Use case
+      description: 描述你想解决的问题，以及期待的行为。
+    validations:
+      required: true
