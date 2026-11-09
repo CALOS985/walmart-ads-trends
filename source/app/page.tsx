@@ -9,60 +9,16 @@ import {
   useState,
 } from "react";
 import { PlacementCharts } from "./placement-charts";
-
-type Granularity = "day" | "week" | "month";
-type AnalysisDimension = "itemId" | "category" | "backendSku" | "sku";
-type MetricKey =
-  | "spend"
-  | "sales"
-  | "roas"
-  | "ctr"
-  | "cpc"
-  | "conversion"
-  | "impressions"
-  | "units"
-  | "addToCart"
-  | "pdpViews";
-
-type AdRecord = {
-  date: Date;
-  itemId: string;
-  placement: string;
-  impressions: number;
-  spend: number;
-  ctr: number;
-  clicks: number;
-  units: number;
-  conversion: number;
-  reportedRoas: number;
-  skuSales: number;
-  sales: number;
-  addToCart: number;
-  pdpViews: number;
-};
-
-type Aggregate = {
-  spend: number;
-  sales: number;
-  impressions: number;
-  clicks: number;
-  units: number;
-  addToCart: number;
-  pdpViews: number;
-};
+import { PeriodComparison } from "./period-comparison";
+import type { AdRecord, Aggregate, AnalysisDimension, Granularity, MetricKey, ProductMapping } from "./analytics";
+import { METRICS, safeDivide, emptyAggregate, addRecord, addAggregate, formatMoney, formatNumber, toIsoDate, formatShortDate } from "./analytics";
+import { parseReportDate, parseAdvertisingCsv, parseProductMappingCsv, readCsvFile } from "./csv";
 
 type FileMeta = {
   name: string;
   rows: number;
   uploadedAt: Date;
   isDemo: boolean;
-};
-
-type ProductMapping = {
-  category: string;
-  backendSku: string;
-  itemId: string;
-  sku: string;
 };
 
 type MappingFileMeta = {
@@ -95,382 +51,6 @@ const DIMENSIONS: Record<
   backendSku: { label: "后台 SKU", countLabel: "后台 SKU" },
   sku: { label: "SKU", countLabel: "SKU" },
 };
-
-const METRICS: Record<
-  MetricKey,
-  {
-    label: string;
-    shortLabel: string;
-    color: string;
-    value: (aggregate: Aggregate) => number;
-    format: (value: number) => string;
-  }
-> = {
-  spend: {
-    label: "广告花费",
-    shortLabel: "花费",
-    color: "#0573d1",
-    value: (a) => a.spend,
-    format: (v) => formatMoney(v),
-  },
-  sales: {
-    label: "30 天归因销售额",
-    shortLabel: "销售额",
-    color: "#12a878",
-    value: (a) => a.sales,
-    format: (v) => formatMoney(v),
-  },
-  roas: {
-    label: "ROAS",
-    shortLabel: "ROAS",
-    color: "#7c5ce5",
-    value: (a) => safeDivide(a.sales, a.spend),
-    format: (v) => `${v.toFixed(2)}x`,
-  },
-  ctr: {
-    label: "点击率 CTR",
-    shortLabel: "CTR",
-    color: "#f59e0b",
-    value: (a) => safeDivide(a.clicks, a.impressions) * 100,
-    format: (v) => `${v.toFixed(2)}%`,
-  },
-  cpc: {
-    label: "平均每次点击费用 CPC",
-    shortLabel: "平均 CPC",
-    color: "#3156c8",
-    value: (a) => safeDivide(a.spend, a.clicks),
-    format: (v) => formatMoney(v),
-  },
-  conversion: {
-    label: "30 天转化率",
-    shortLabel: "转化率",
-    color: "#e9556f",
-    value: (a) => safeDivide(a.units, a.clicks) * 100,
-    format: (v) => `${v.toFixed(2)}%`,
-  },
-  impressions: {
-    label: "广告曝光",
-    shortLabel: "曝光",
-    color: "#0e9ab7",
-    value: (a) => a.impressions,
-    format: (v) => formatNumber(v),
-  },
-  units: {
-    label: "30 天售出件数",
-    shortLabel: "售出件数",
-    color: "#12a878",
-    value: (a) => a.units,
-    format: (v) => formatNumber(v),
-  },
-  addToCart: {
-    label: "30 天加购物车数量",
-    shortLabel: "加购物车",
-    color: "#d57b00",
-    value: (a) => a.addToCart,
-    format: (v) => formatNumber(v),
-  },
-  pdpViews: {
-    label: "商品详情页浏览",
-    shortLabel: "详情页浏览",
-    color: "#7c5ce5",
-    value: (a) => a.pdpViews,
-    format: (v) => formatNumber(v),
-  },
-};
-
-function safeDivide(numerator: number, denominator: number) {
-  return denominator ? numerator / denominator : 0;
-}
-
-function emptyAggregate(): Aggregate {
-  return {
-    spend: 0,
-    sales: 0,
-    impressions: 0,
-    clicks: 0,
-    units: 0,
-    addToCart: 0,
-    pdpViews: 0,
-  };
-}
-
-function addRecord(aggregate: Aggregate, row: AdRecord) {
-  aggregate.spend += row.spend;
-  aggregate.sales += row.sales;
-  aggregate.impressions += row.impressions;
-  aggregate.clicks += row.clicks;
-  aggregate.units += row.units;
-  aggregate.addToCart += row.addToCart;
-  aggregate.pdpViews += row.pdpViews;
-}
-
-function addAggregate(target: Aggregate, source: Aggregate) {
-  target.spend += source.spend;
-  target.sales += source.sales;
-  target.impressions += source.impressions;
-  target.clicks += source.clicks;
-  target.units += source.units;
-  target.addToCart += source.addToCart;
-  target.pdpViews += source.pdpViews;
-}
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("zh-CN", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: value >= 1000 ? 0 : 2,
-  }).format(value || 0);
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("zh-CN", {
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-}
-
-function toIsoDate(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatShortDate(date: Date) {
-  return `${date.getMonth() + 1}月${date.getDate()}日`;
-}
-
-function parseReportDate(value: string) {
-  const clean = value.trim();
-  const reportMatch = clean.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
-  if (reportMatch) {
-    const monthMap: Record<string, number> = {
-      jan: 0,
-      feb: 1,
-      mar: 2,
-      apr: 3,
-      may: 4,
-      jun: 5,
-      jul: 6,
-      aug: 7,
-      sep: 8,
-      oct: 9,
-      nov: 10,
-      dec: 11,
-    };
-    const yearNumber = Number(reportMatch[3]);
-    const year = yearNumber < 100 ? 2000 + yearNumber : yearNumber;
-    const month = monthMap[reportMatch[2].toLowerCase()];
-    if (month !== undefined) {
-      return new Date(year, month, Number(reportMatch[1]), 12);
-    }
-  }
-  const isoMatch = clean.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (isoMatch) {
-    return new Date(
-      Number(isoMatch[1]),
-      Number(isoMatch[2]) - 1,
-      Number(isoMatch[3]),
-      12,
-    );
-  }
-  const fallback = new Date(clean);
-  return Number.isNaN(fallback.getTime()) ? null : fallback;
-}
-
-function parseNumeric(value: string | undefined) {
-  const number = Number(
-    String(value ?? "")
-      .replace(/[$,%\s]/g, "")
-      .replace(/,/g, ""),
-  );
-  return Number.isFinite(number) ? number : 0;
-}
-
-function normalizeHeader(value: string) {
-  return value
-    .replace(/^\uFEFF/, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
-}
-
-function normalizePlacement(value: string) {
-  const placement = value.trim();
-  return !placement || /^(undefined|null|n\/?a|na|-+)$/i.test(placement)
-    ? "未标注"
-    : placement;
-}
-
-function parseCsvRows(text: string) {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i += 1) {
-    const character = text[i];
-    const next = text[i + 1];
-    if (character === '"' && inQuotes && next === '"') {
-      field += '"';
-      i += 1;
-    } else if (character === '"') {
-      inQuotes = !inQuotes;
-    } else if (character === "," && !inQuotes) {
-      row.push(field);
-      field = "";
-    } else if ((character === "\n" || character === "\r") && !inQuotes) {
-      if (character === "\r" && next === "\n") i += 1;
-      row.push(field);
-      if (row.some((cell) => cell.trim())) rows.push(row);
-      row = [];
-      field = "";
-    } else {
-      field += character;
-    }
-  }
-  if (field.length || row.length) {
-    row.push(field);
-    if (row.some((cell) => cell.trim())) rows.push(row);
-  }
-  return rows;
-}
-
-async function readCsvFile(file: File): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-  } catch {
-    // Chinese Excel CSV exports may use ANSI (GBK) instead of UTF-8.
-    return new TextDecoder("gb18030").decode(bytes);
-  }
-}
-
-function parseAdvertisingCsv(text: string) {
-  const rawRows = parseCsvRows(text);
-  const headerIndex = rawRows.findIndex((row) => {
-    const normalized = row.map(normalizeHeader);
-    return normalized.includes("date") && normalized.includes("itemid");
-  });
-  if (headerIndex < 0) {
-    throw new Error("未找到 Date 和 Item Id 字段，请上传 Walmart 广告报表 CSV。");
-  }
-
-  const headers = rawRows[headerIndex].map(normalizeHeader);
-  const column = (name: string) => headers.indexOf(normalizeHeader(name));
-  const pick = (row: string[], name: string) => {
-    const index = column(name);
-    return index >= 0 ? row[index] ?? "" : "";
-  };
-
-  const records = rawRows
-    .slice(headerIndex + 1)
-    .map((row): AdRecord | null => {
-      const date = parseReportDate(pick(row, "Date"));
-      const itemId = pick(row, "Item Id").trim();
-      if (!date || !itemId) return null;
-      const impressions = parseNumeric(pick(row, "Impressions"));
-      const spend = parseNumeric(pick(row, "Ad Spend"));
-      const ctr = parseNumeric(pick(row, "CTR"));
-      const averageCpc = parseNumeric(pick(row, "Average CPC"));
-      const clicks =
-        averageCpc > 0 && spend > 0
-          ? spend / averageCpc
-          : impressions * (ctr / 100);
-      const totalAddToCart = pick(row, "Total Add to Cart - 30 Day");
-      const advertisedAddToCart = pick(
-        row,
-        "Advertised Add to Cart - 30 Day",
-      );
-      return {
-        date,
-        itemId,
-        placement: normalizePlacement(pick(row, "Placement")),
-        impressions,
-        spend,
-        ctr,
-        clicks,
-        units: parseNumeric(pick(row, "Total Units Sold - 30 Day")),
-        conversion: parseNumeric(pick(row, "Conversion Rate - 30 Day")),
-        reportedRoas: parseNumeric(pick(row, "ROAS - 30 Day")),
-        skuSales: parseNumeric(
-          pick(row, "Advertised SKU Sales. - 30 Day") ||
-            pick(row, "Advertised SKU Sales - 30 Day"),
-        ),
-        sales: parseNumeric(pick(row, "Total Sales Rev. - 30 Day")),
-        addToCart: parseNumeric(totalAddToCart || advertisedAddToCart),
-        pdpViews: parseNumeric(
-          pick(row, "Advertised Product Detail Page Views - 30 Day"),
-        ),
-      };
-    })
-    .filter((row): row is AdRecord => Boolean(row));
-
-  if (!records.length) {
-    throw new Error("已找到表头，但没有识别到有效的数据行。");
-  }
-  return records;
-}
-
-function parseProductMappingCsv(text: string) {
-  const rawRows = parseCsvRows(text);
-  const normalizeMappingHeader = (value: string) =>
-    value
-      .replace(/^\uFEFF/, "")
-      .trim()
-      .toLowerCase()
-      .replace(/[\s_-]/g, "");
-  const aliases = {
-    category: ["品类", "category"],
-    backendSku: ["后台sku", "backendsku"],
-    itemId: ["itemid"],
-    sku: ["sku"],
-  };
-  const headerIndex = rawRows.findIndex((row) => {
-    const normalized = row.map(normalizeMappingHeader);
-    return Object.values(aliases).every((names) =>
-      names.some((name) => normalized.includes(normalizeMappingHeader(name))),
-    );
-  });
-  if (headerIndex < 0) {
-    throw new Error("映射表需要包含：品类、后台SKU、Item ID、SKU 四个字段。");
-  }
-
-  const headers = rawRows[headerIndex].map(normalizeMappingHeader);
-  const column = (names: string[]) =>
-    names
-      .map((name) => headers.indexOf(normalizeMappingHeader(name)))
-      .find((index) => index >= 0) ?? -1;
-  const columns = {
-    category: column(aliases.category),
-    backendSku: column(aliases.backendSku),
-    itemId: column(aliases.itemId),
-    sku: column(aliases.sku),
-  };
-  const mappings = rawRows
-    .slice(headerIndex + 1)
-    .map((row): ProductMapping | null => {
-      const mapping = {
-        category: row[columns.category]?.trim() ?? "",
-        backendSku: row[columns.backendSku]?.trim() ?? "",
-        itemId: row[columns.itemId]?.trim() ?? "",
-        sku: row[columns.sku]?.trim() ?? "",
-      };
-      return Object.values(mapping).every(Boolean) ? mapping : null;
-    })
-    .filter((row): row is ProductMapping => Boolean(row));
-
-  if (!mappings.length) {
-    throw new Error("已找到映射表表头，但没有识别到完整的映射数据。");
-  }
-  const duplicateItemIds = mappings.filter(
-    (row, index) =>
-      mappings.findIndex((candidate) => candidate.itemId === row.itemId) !==
-      index,
-  );
-  if (duplicateItemIds.length) {
-    throw new Error(`映射表存在重复 Item ID：${duplicateItemIds[0].itemId}`);
-  }
-  return mappings;
-}
 
 function createDemoData() {
   const itemIds = ["DEMO-3021", "DEMO-5748", "DEMO-8162"];
@@ -663,6 +243,13 @@ export default function Home() {
     () => [...new Set(records.map((row) => row.placement))].sort(),
     [records],
   );
+
+  const comparisonSelection = useMemo(() => {
+    const selected = new Set(selectedValues);
+    return records.filter((row) =>
+      selected.has(dimensionValueForRecord(row, dimension, mappingByItemId)),
+    );
+  }, [records, selectedValues, dimension, mappingByItemId]);
 
   const filteredRecords = useMemo(() => {
     const start = parseReportDate(startDate);
@@ -952,7 +539,7 @@ export default function Home() {
               </strong>
               <p>
                 {fileMeta.isDemo
-                  ? "支持 Walmart CSV，可拖拽到这里或选择文件，请严格按照模板表字段顺序配制Reports-Custom Reports的字段顺序才能导入分析！"
+                  ? "支持 Walmart CSV，可拖拽或选择文件；按字段名称自动识别，列顺序可自由调整，请保留模板字段名称。"
                   : `${formatNumber(fileMeta.rows)} 行数据 · ${itemIds.length} 个 Item ID · ${formatShortDate(bounds.min)}—${formatShortDate(bounds.max)}`}
               </p>
             </div>
@@ -1442,11 +1029,19 @@ export default function Home() {
           />
         </section>
 
+        <PeriodComparison
+          key={fileMeta.uploadedAt.getTime()}
+          records={records}
+          selectedRecords={comparisonSelection}
+          placement={placement}
+          latestDate={toIsoDate(bounds.max)}
+        />
+
         <div className="analysis-grid">
           <section className="table-card">
             <div className="card-header">
               <div>
-                <span className="section-number">03</span>
+                <span className="section-number">04</span>
                 <div>
                   <h2>{dimensionConfig.label}表现排名</h2>
                   <p>按归因销售额从高到低排列</p>

@@ -5,6 +5,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -12,6 +13,6 @@
     "jsx": "react-jsx",
     "types": ["vite/client", "node"]
   },
-  "include": ["app/**/*.tsx", "src/**/*.tsx", "build/**/*.ts", "vite.config.ts"],
+  "include": ["app/**/*.ts", "app/**/*.tsx", "src/**/*.tsx", "tests/**/*.ts", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

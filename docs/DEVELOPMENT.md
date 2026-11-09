@@ -20,6 +20,7 @@ pnpm dev
 ```bash
 cd source
 pnpm typecheck
+pnpm test
 pnpm build
 ```
 
@@ -37,7 +38,7 @@ python scripts/verify_publication.py
 python scripts/package_release.py
 ```
 
-`release/walmart-ads-trends-v1.1.0-static.zip` 直接使用仓库根目录的已构建成品。
+`release/walmart-ads-trends-v1.2.0-static.zip` 直接使用仓库根目录的已构建成品。
 源码修改并构建后，用以下命令打包新产物：
 
 ```bash
@@ -63,3 +64,11 @@ python scripts/package_release.py --site-dir source/dist
 The root contains the ready-to-host static site. Editable React / TypeScript code is under `source/`.
 Use Node.js 22.13+ and pnpm 11.25.0, then run `pnpm install --frozen-lockfile`, `pnpm typecheck`, and `pnpm build` inside `source/`.
 Deploy the contents of `source/dist/`, or package them with `python scripts/package_release.py --site-dir source/dist` from the repository root. Keep the relative Vite base path and template links.
+
+## V1.2.0 对比与导入模块
+
+- `source/app/analytics.ts`：共享指标、汇总与格式化。
+- `source/app/csv.ts`：按表头名称解析 CSV，校验缺失 / 重复字段。
+- `source/app/comparison.ts`：纯函数日期区间、逐 Item 汇总、差值与变化率。
+- `source/app/period-comparison.tsx` / `.css`：时间段对比界面。
+- `source/tests/analytics.test.ts`：列序变化、加权比率、跨月日期、零基期与缺失数据等逻辑测试。

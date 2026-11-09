@@ -47,7 +47,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 ### 三步上手
 
-1. 到 Walmart 后台 **Reports → Custom Reports**，按[模板字段顺序](#report-format-zh)导出广告报表 CSV。
+1. 到 Walmart 后台 **Reports → Custom Reports**，参考[模板字段名称](#report-format-zh)导出广告报表 CSV。
 2. 打开[在线演示](https://carloswiki.com/Walmart%20Trends/)，点 **选择广告报表** 上传 CSV；想按品类 / 后台 SKU 分析，再上传一份产品映射表。
 3. 在页面上选 Item ID、广告版位和时间范围，直接看数据概览、版位对比、趋势图和表现排名。
 
@@ -55,7 +55,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 |  | 功能 | 一句话说明 |
 | --- | --- | --- |
-| 📤 | 上传广告报表 | 支持拖拽或选择 Walmart CSV；严格按模板字段顺序配制 Custom Reports 的字段顺序才能导入 |
+| 📤 | 上传广告报表 | 支持拖拽或选择 Walmart CSV；按字段名称自动识别；CSV 列顺序可调整 |
 | 🗺️ | 上传产品映射表 | 字段：品类、后台 SKU、Item ID、SKU；上传后可按品类 / 后台 SKU / SKU 维度分析 |
 | 📊 | 数据概览 | 8 张 KPI 卡片：总广告花费、总销售额（30 天归因）、整体 ROAS、平均 CTR、平均 CPC、30 天转化率、加购物车数量、详情页浏览 |
 | 🧩 | 各广告版位数据 | Homepage、Carousel、Search In-grid 三个版位，各汇总 8 项核心指标；另有版位占比饼状图与版位对比柱状图 |
@@ -63,13 +63,18 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 | 🏆 | 表现排名 | 按归因销售额从高到低排列每个 Item ID：花费、销售额、售出件数、ROAS、CTR、转化率 |
 | 💡 | 快速洞察 | 基于当前筛选自动计算：销售额领先、投放效率最佳、贡献最高版位、数据覆盖天数与有效记录数 |
 | 🗓️ | 时间筛选 | 自定义时间段，另有近 7 天、近 30 天、全部快捷按钮 |
+| 🔄 | 时间段对比 | 在 Item ID 表现排名上方，近 3 / 7 / 30 天及完整自然月快捷对比，也可自选两个区间；按 Item ID 展开 10 项指标的两个区间数值、差值与变化率 |
 | 🔒 | 本地处理 | 广告报表和产品映射表只在当前浏览器中读取和分析，不上传服务器 |
 
 <a id="screenshots"></a>
 
 ### 截图 · Screenshots
 
-截图为 V1.1.0 构建包的真实渲染画面（1600×1000 视口、2x 像素、PNG 无损），与线上站为同一版本；图中为内置演示数据，非真实广告数据。
+原有模块截图使用内置演示数据，新增时间段对比截图使用合成样例报表展示涨跌和缺失区间；均非真实业务数据。部署新版 ZIP 后可使用 V1.2.0 功能。
+
+**时间段对比（V1.2.0）**
+
+![时间段对比](docs/images/screenshots/screenshot-06-period-comparison.jpg)
 
 **上传区与数据概览**
 
@@ -103,11 +108,11 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 ### 报表格式要求
 
-页面提供模板下载（`templates/` 目录下也有同款文件），**请严格按照模板表字段顺序配制 Reports → Custom Reports 的字段顺序，否则无法导入分析**。
+页面提供模板下载（`templates/` 目录下也有同款文件），**按字段名称自动识别，列顺序可以自由调整；请保留模板字段名称。缺失必需字段或存在重复字段时会显示明确提示。**。
 
 **广告报表模板字段**（`templates/ads-report-template.csv`）：
 
-| 顺序 | 字段 |
+| 模板序号（可调整） | 字段 |
 | --- | --- |
 | 1 | Date |
 | 2 | Item Id |
@@ -145,9 +150,19 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 2. 解压后 `index.html`、`assets/`、`templates/`、`favicon.svg`、`og.png` 应直接位于该目录内，不要额外套一层同名子文件夹。
 3. 访问对应网址并按 `Ctrl+F5` 强制刷新；如果仍显示旧页面，清除该网址的服务器或 CDN 页面缓存后重试。
 
+### 时间段对比的计算规则
+
+- 位置：趋势对比之后、Item ID 表现排名之前。默认对比全部 Item ID，可搜索、全部展开 / 收起，也可选择跟随上方商品 / 品类 / SKU 筛选；版位筛选始终生效。
+- 近 3 / 7 / 30 天以报表最新日期为末日，包含当天，与紧邻的前 3 / 7 / 30 天比较。完整月比较最新已结束的自然月与其前一个月。
+- 自定义时间段 1 是对比期，时间段 2 是基期；开始和结束日期都计入。该区间独立于页面顶部和趋势图日期。
+- 差值 = 时间段 1 − 时间段 2；变化率 = 差值 ÷ 基期绝对值。基期为 0、对比期不为 0 时不显示无限大变化率。
+- 上涨用绿色 ↑，下跌用红色 ↓，持平灰色。CTR / 转化率的绝对变化单位为“百分点”。绿色仅表示数值增加；花费和 CPC 会附带成本解读。
+- 比率使用区间汇总数据重算。Clicks 存在时优先使用实际点击；否则按 Average CPC 折算，缺少有效 CPC 时使用曝光 × CTR。分母为 0 时显示“—”。
+- 任一区间没有该 Item 记录时显示“无数据”，不把它当作 0 计算涨跌；区间覆盖不足、天数不同或重叠均有提示。
+
 ### 下载与源码
 
-- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.1.0-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
+- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.0-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
 - **修改功能**：React / TypeScript 原始代码在 [`source/`](source/)，环境、构建与重新打包方法见 [开发说明](docs/DEVELOPMENT.md)。
 - **下载模板**：[广告报表模板](templates/ads-report-template.csv) · [产品映射表模板](templates/product-mapping-template.csv)。
 
@@ -176,19 +191,20 @@ walmart-ads-trends/
 
 ### 最近更新
 
-首次 GitHub 发布：2026-11-08；应用版本仍为 V1.1.0，基于 2026-10-24 的静态部署版。完整记录见 [CHANGELOG.md](CHANGELOG.md)。
+**V1.2.0（2026-11-09）**
 
-**V1.1.0（2026-10-24）**
+- 新增时间段对比：3 / 7 / 30 天、完整自然月和两个自定义区间。
+- 每个 Item ID 可展开花费、销售额、ROAS、CTR、平均 CPC、转化率、曝光、售出件数、加购物车、详情页浏览。
+- 显示两个时间段的数值、差值、变化率、红绿箭头与运营解读，并处理无数据、零基期和区间覆盖提示。
+- CSV 按字段名自动识别，列顺序可调整；新增缺失和重复字段校验，支持实际 Clicks。
 
-- 上传区域提示更新：明确要求严格按照模板表字段顺序配制 Reports → Custom Reports 的字段顺序才能导入分析
-- 静态资源与两份模板下载链接修正为相对路径，部署到任意目录都能正常下载
-- 页脚加入 Copyright BY 卡洛斯的百宝箱、粤ICP备2026054366号-1，以及两个博客链接（新标签页打开）
+首次 GitHub 发布为 V1.1.0（2026-11-08）。完整历史见 [CHANGELOG.md](CHANGELOG.md)。
 
 ### 常见问题
 
 **上传后提示“未找到 Date 和 Item Id 字段”？**
 
-请确认上传的是 Walmart 广告报表 CSV，且表头包含 `Date` 和 `Item Id` 字段；字段顺序必须与模板一致。
+请确认上传的是 Walmart 广告报表 CSV，且表头包含 `Date`、`Item Id` 等必需字段；列顺序不需要与模板一致。缺失或重复字段会在页面提示。
 
 **上传后提示“已找到表头，但没有识别到有效的数据行”？**
 
@@ -208,7 +224,7 @@ walmart-ads-trends/
 
 ### 反馈
 
-- 故障与需求：请在 [GitHub Issues](https://github.com/CALOS985/walmart-ads-trends/issues/new/choose) 提交，附上版本号（V1.1.0）与复现步骤；涉及报表内容的问题请先去掉真实 Item ID 与金额再贴。
+- 故障与需求：请在 [GitHub Issues](https://github.com/CALOS985/walmart-ads-trends/issues/new/choose) 提交，附上版本号（V1.2.0）与复现步骤；涉及报表内容的问题请先去掉真实 Item ID 与金额再贴。
 - 使用问题：请在 [Discussions](https://github.com/CALOS985/walmart-ads-trends/discussions) 提问。
 
 ### 许可证 · License
@@ -234,7 +250,7 @@ No sign-up, no Node.js, no server. Your report and mapping files are read and an
 
 ### Get started
 
-1. In Walmart Seller Center, go to **Reports → Custom Reports** and export an ads report CSV with the fields in the exact order of the [template](#report-format).
+1. In Walmart Seller Center, go to **Reports → Custom Reports** and export an ads report CSV using the field names in the [template](#report-format); column order may vary.
 2. Open the [live demo](https://carloswiki.com/Walmart%20Trends/), click **选择广告报表 (Select ads report)** and upload the CSV. To analyze by category / backend SKU, upload a product mapping file too.
 3. Pick Item IDs, placements and a date range, then read the overview, placement comparison, trend chart and ranking.
 
@@ -242,7 +258,7 @@ No sign-up, no Node.js, no server. Your report and mapping files are read and an
 
 |  | Feature | In one line |
 | --- | --- | --- |
-| 📤 | Upload ads report | Drag-and-drop or pick a Walmart CSV; field order must match the template exactly |
+| 📤 | Upload ads report | Drag-and-drop or pick a Walmart CSV; columns are matched by header name and can be reordered |
 | 🗺️ | Upload product mapping | Fields: category, backend SKU, Item ID, SKU; enables category / backend SKU / SKU analysis |
 | 📊 | Overview | 8 KPI cards: total ad spend, total sales (30-day attribution), overall ROAS, average CTR, average CPC, 30-day conversion rate, add-to-cart, product detail page views |
 | 🧩 | Placement breakdown | Homepage, Carousel and Search In-grid, each with 8 core metrics; plus a placement share pie chart and a comparison bar chart |
@@ -250,11 +266,12 @@ No sign-up, no Node.js, no server. Your report and mapping files are read and an
 | 🏆 | Performance ranking | Every Item ID ranked by attributed sales: spend, sales, units sold, ROAS, CTR, conversion rate |
 | 💡 | Quick insights | Auto-computed for the current filter: sales leader, best efficiency, top contributing placement, data coverage |
 | 🗓️ | Date filter | Custom range, plus Last 7 days / Last 30 days / All shortcuts |
+| 🔄 | Period comparison | Compare 3 / 7 / 30-day periods, complete calendar months or two custom ranges; expand each item to see all 10 metrics, absolute changes and percentage changes |
 | 🔒 | Local only | Reports and mapping files are read and analyzed only in your browser |
 
 ### Report format
 
-Templates are downloadable from the page and included in `templates/`. **Match the template's field order exactly when configuring Reports → Custom Reports, or the file cannot be imported.**
+Templates are downloadable from the page and included in `templates/`. **Columns are matched by normalized header name, regardless of order. Keep the template field names; missing required or duplicate headers produce an error.**
 
 **Ads report template** (`templates/ads-report-template.csv`): Date, Item Id, Placement, Impressions, Ad Spend, CTR, Average CPC, Total Units Sold - 30 Day, Conversion Rate - 30 Day, ROAS - 30 Day, Advertised SKU Sales. - 30 Day, Total Sales Rev. - 30 Day, Advertised Add to Cart - 30 Day, Advertised Product Detail Page Views - 30 Day, Total Add to Cart - 30 Day.
 
@@ -278,17 +295,18 @@ This is a pre-built static site. **No Node.js, no `pnpm` needed** — any static
 
 ### What's new
 
-**V1.1.0 (2026-10-24)**
+**V1.2.0 (2026-11-09)**
 
-- Upload hint updated: field order must strictly match the template when configuring Reports → Custom Reports
-- Static assets and both template download links fixed to relative paths, so the site works from any directory
-- Footer added: Copyright by 卡洛斯的百宝箱, ICP filing 粤ICP备2026054366号-1, and two blog links (open in a new tab)
+- Added per-item period comparisons above the ranking: 3 / 7 / 30 days, complete calendar months and custom date ranges.
+- All 10 metrics show both period values, absolute deltas and relative changes; green ↑ / red ↓ indicate numeric direction, with cost and efficiency interpretations.
+- Ratios use aggregate totals. Missing periods, zero baselines, incomplete coverage, overlapping or unequal ranges are handled explicitly.
+- CSV headers can appear in any order; required and duplicate headers are validated. Actual Clicks take priority over estimates.
 
 ### FAQ
 
 **"Date and Item Id fields not found" after upload?**
 
-Make sure the file is a Walmart ads report CSV whose header contains `Date` and `Item Id`, with fields in the template order.
+Make sure the file is a Walmart ads report CSV whose header contains `Date` and `Item Id`, with the required template field names. Columns can be in any order.
 
 **"Header found, but no valid data rows"?**
 
@@ -304,13 +322,13 @@ No. Reports and mapping files are read and analyzed only in your browser and gon
 
 ### Download and development
 
-- Download `walmart-ads-trends-v1.1.0-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
+- Download `walmart-ads-trends-v1.2.0-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
 - Editable React / TypeScript files are in [`source/`](source/). See [development instructions](docs/DEVELOPMENT.md) for building and packaging.
-- The first GitHub release is dated 2026-11-08. Application version remains V1.1.0, based on the 2026-10-24 build.
+- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.0 (2026-11-09).
 
 ### Feedback
 
-- Bugs and feature requests: please open a [GitHub Issue](https://github.com/CALOS985/walmart-ads-trends/issues/new/choose) with the version (V1.1.0) and steps to reproduce. Remove real Item IDs and amounts before pasting report content.
+- Bugs and feature requests: please open a [GitHub Issue](https://github.com/CALOS985/walmart-ads-trends/issues/new/choose) with the version (V1.2.0) and steps to reproduce. Remove real Item IDs and amounts before pasting report content.
 - Usage questions: please use [Discussions](https://github.com/CALOS985/walmart-ads-trends/discussions).
 
 ### License

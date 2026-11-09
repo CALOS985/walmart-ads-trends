@@ -51,7 +51,7 @@ for path in ['templates/ads-report-template.csv', 'templates/product-mapping-tem
         errors.append(f'Missing template: {path}')
     if (ROOT / path).read_bytes() != (ROOT / 'source/public' / path).read_bytes():
         errors.append(f'Template differs from source: {path}')
-for text in ['请严格按照模板表字段顺序配制Reports-Custom Reports的字段顺序才能导入分析！', '粤ICP备2026054366号-1', 'https://calos985.github.io/', 'https://carloswiki.com/blog/']:
+for text in ['时间段对比', '近 3 天 vs 前 3 天', '全部展开', '按字段名称自动识别，列顺序可自由调整', '粤ICP备2026054366号-1', 'https://calos985.github.io/', 'https://carloswiki.com/blog/']:
     if text not in bundle:
         errors.append(f'Missing expected UI text or link: {text}')
 for image in sorted((ROOT / 'docs/images/screenshots').glob('*.png')):

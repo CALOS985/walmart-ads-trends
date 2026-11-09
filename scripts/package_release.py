@@ -2,12 +2,13 @@
 from pathlib import Path
 import argparse
 import hashlib
+import json
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--site-dir', default='.', help='Built site directory, relative to the repository')
-parser.add_argument('--version', default='1.1.0')
+parser.add_argument('--version', default=json.loads((ROOT / 'source/package.json').read_text())['version'])
 args = parser.parse_args()
 site = (ROOT / args.site_dir).resolve()
 if site != ROOT and ROOT not in site.parents:
