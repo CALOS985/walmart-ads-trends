@@ -162,7 +162,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 ### 下载与源码
 
-- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.0-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
+- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.1-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
 - **修改功能**：React / TypeScript 原始代码在 [`source/`](source/)，环境、构建与重新打包方法见 [开发说明](docs/DEVELOPMENT.md)。
 - **下载模板**：[广告报表模板](templates/ads-report-template.csv) · [产品映射表模板](templates/product-mapping-template.csv)。
 
@@ -183,6 +183,7 @@ walmart-ads-trends/
 ├── .github/ISSUE_TEMPLATE/    # 故障反馈与功能建议表单
 ├── CHANGELOG.md               # 更新记录
 ├── THIRD_PARTY_NOTICES.md      # 第三方运行时许可
+├── favicon.png                  # 浏览器标签图标
 ├── favicon.svg
 ├── og.png                      # 分享封面图
 ├── LICENSE
@@ -190,6 +191,11 @@ walmart-ads-trends/
 ```
 
 ### 最近更新
+
+**V1.2.1（2026-11-09）**
+
+- 浏览器标签图标更换为本地 PNG 图标，源码和静态部署包同步更新。
+
 
 **V1.2.0（2026-11-09）**
 
@@ -295,6 +301,11 @@ This is a pre-built static site. **No Node.js, no `pnpm` needed** — any static
 
 ### What's new
 
+**V1.2.1 (2026-11-09)**
+
+- Replaced the browser tab icon with the supplied PNG, bundled locally for static hosting.
+
+
 **V1.2.0 (2026-11-09)**
 
 - Added per-item period comparisons above the ranking: 3 / 7 / 30 days, complete calendar months and custom date ranges.
@@ -322,9 +333,9 @@ No. Reports and mapping files are read and analyzed only in your browser and gon
 
 ### Download and development
 
-- Download `walmart-ads-trends-v1.2.0-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
+- Download `walmart-ads-trends-v1.2.1-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
 - Editable React / TypeScript files are in [`source/`](source/). See [development instructions](docs/DEVELOPMENT.md) for building and packaging.
-- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.0 (2026-11-09).
+- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.1 (2026-11-09).
 
 ### Feedback
 

@@ -16,7 +16,7 @@ if site != ROOT and ROOT not in site.parents:
 if not all(char.isalnum() or char in '.-_' for char in args.version):
     parser.error('Version contains invalid filename characters')
 files = []
-for name in ['index.html', 'favicon.svg', 'og.png']:
+for name in ['index.html', 'favicon.png', 'favicon.svg', 'og.png']:
     path = site / name
     if not path.is_file():
         parser.error(f'Missing built file: {path}')
@@ -38,7 +38,7 @@ with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslev
     package.writestr('README-DEPLOY.txt', '''Walmart Ads Trends / Walmart 广告趋势看板
 
 Upload and extract this package inside your static site's directory.
-Keep index.html, assets/, templates/, favicon.svg and og.png at that directory's top level.
+Keep index.html, assets/, templates/, favicon.png, favicon.svg and og.png at that directory's top level.
 Use a directory URL with a trailing slash, then hard-refresh the browser.
 No Node.js or server-side application is needed.
 

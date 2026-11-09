@@ -38,7 +38,7 @@ python scripts/verify_publication.py
 python scripts/package_release.py
 ```
 
-`release/walmart-ads-trends-v1.2.0-static.zip` 直接使用仓库根目录的已构建成品。
+`release/walmart-ads-trends-v1.2.1-static.zip` 直接使用仓库根目录的已构建成品。
 源码修改并构建后，用以下命令打包新产物：
 
 ```bash
@@ -47,7 +47,7 @@ python scripts/package_release.py --site-dir source/dist
 
 同时生成 `SHA256SUMS.txt`。上传静态 ZIP 和该校验文件到 GitHub Release；GitHub 自带的 Source code 下载包含完整仓库源码。
 
-重新发布前，将 `source/dist/` 中的 `index.html`、`assets/`、`templates/`、`favicon.svg`、`og.png` 同步回根目录的对应位置，并更新版本和 CHANGELOG。源码目录的依赖安装与构建产物不提交。
+重新发布前，将 `source/dist/` 中的 `index.html`、`assets/`、`templates/`、`favicon.png`、`favicon.svg`、`og.png` 同步回根目录的对应位置，并更新版本和 CHANGELOG。源码目录的依赖安装与构建产物不提交。
 
 ## 项目结构
 

@@ -42,7 +42,7 @@ entry.feed((ROOT / 'index.html').read_text(encoding='utf-8'))
 for link in entry.links:
     if not link.startswith('./') or not (ROOT / link).is_file():
         errors.append(f'Invalid static resource: {link}')
-for required in ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'source/app/page.tsx', 'source/package.json', 'source/pnpm-lock.yaml']:
+for required in ['favicon.png', 'source/public/favicon.png', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'source/app/page.tsx', 'source/package.json', 'source/pnpm-lock.yaml']:
     if not (ROOT / required).is_file():
         errors.append(f'Missing publication file: {required}')
 bundle = next((ROOT / 'assets').glob('*.js')).read_text(encoding='utf-8')
