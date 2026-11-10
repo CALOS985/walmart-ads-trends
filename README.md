@@ -43,7 +43,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 打开即用，不用注册、不用装 Node.js、不用连服务器。报表和映射表只在当前浏览器中读取和分析，不会上传到任何地方。
 
-> 首次打开默认显示内置演示数据（示例广告报表.csv，2026 年 6 月 1 日—6 月 18 日，18 个数据日、3 个商品、162 行有效记录），上传自己的报表后会自动替换为你的数据。
+> 首次打开默认显示内置演示数据（示例广告报表.csv，2026 年 6 月 1 日—6 月 18 日，18 个数据日、3 个商品、5 个版位、270 行有效记录），上传自己的报表后会自动替换为你的数据。
 
 ### 三步上手
 
@@ -57,20 +57,24 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 | --- | --- | --- |
 | 📤 | 上传广告报表 | 支持拖拽或选择 Walmart CSV；按字段名称自动识别；CSV 列顺序可调整 |
 | 🗺️ | 上传产品映射表 | 字段：品类、后台 SKU、Item ID、SKU；上传后可按品类 / 后台 SKU / SKU 维度分析 |
-| 📊 | 数据概览 | 8 张 KPI 卡片：总广告花费、归因销售额（30天模型）、整体 ROAS、平均 CTR、平均 CPC、件数转化率、加购物车数量、详情页浏览 |
-| 🧩 | 各广告版位数据 | Homepage、Carousel、Search In-grid 三个版位，各汇总 8 项核心指标；另有版位占比饼状图与版位对比柱状图 |
-| 📈 | 趋势对比 | 花费、销售额、ROAS、CTR、平均 CPC、件数转化率、曝光、售出件数、加购物车、详情页浏览共 10 个指标，按日 / 按周 / 按月看折线变化 |
-| 🏆 | 表现排名 | 按归因销售额从高到低排列每个 Item ID：花费、销售额、售出件数、ROAS、CTR、件数转化率 |
+| 📊 | 数据概览 | 10 张 KPI 卡片：总广告花费、归因销售额（30天模型）、整体 ROAS、平均 CTR、平均 CPC、件数转化率、订单转化率、归因订单数、加购物车数量、详情页浏览 |
+| 🧩 | 各广告版位数据 | 演示数据含 Homepage、Carousel、Buybox、Search In-grid、Browse In-grid 五个版位，各汇总 10 项核心指标；上传后按报表实际版位显示；另有版位占比饼状图与版位对比柱状图 |
+| 📈 | 趋势对比 | 花费、销售额、ROAS、CTR、平均 CPC、件数转化率、订单转化率、曝光、售出件数、订单数、加购物车、详情页浏览共 12 个指标，按日 / 按周 / 按月看折线变化 |
+| 🏆 | 表现排名 | 按归因销售额从高到低排列每个 Item ID：花费、销售额、售出件数、订单数、ROAS、CTR、件数转化率和订单转化率 |
 | 💡 | 快速洞察 | 基于当前筛选自动计算：销售额领先、投放效率最佳、贡献最高版位、数据覆盖天数与有效记录数 |
 | 🗓️ | 时间筛选 | 自定义时间段，另有近 7 天、近 30 天、全部快捷按钮 |
-| 🔄 | 时间段对比 | 在 Item ID 表现排名上方，近 3 / 7 / 30 天及完整自然月快捷对比，也可自选两个区间；按 Item ID 展开 10 项指标的两个区间数值、差值与变化率 |
+| 🔄 | 时间段对比 | 在 Item ID 表现排名上方，近 3 / 7 / 30 天及完整自然月快捷对比，也可自选两个区间；按 Item ID 展开 12 项指标的两个区间数值、差值与变化率 |
 | 🔒 | 本地处理 | 广告报表和产品映射表只在当前浏览器中读取和分析，不上传服务器 |
 
 <a id="screenshots"></a>
 
 ### 截图 · Screenshots
 
-原有模块截图使用内置演示数据，新增时间段对比截图使用合成样例报表展示涨跌和缺失区间；均非真实业务数据。部署新版 ZIP 后可使用 V1.2.0 功能。
+截图均使用虚构演示数据。下方旧版截图保留其拍摄时的指标和示例数值，当前 V1.3.0 已增加订单指标和五个版位。
+
+**订单数与两种转化率（V1.3.0）**
+
+![订单与件数转化率](docs/images/screenshots/screenshot-08-order-conversion.jpg)
 
 **时间段对比（V1.2.0）**
 
@@ -92,7 +96,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 ![趋势对比](docs/images/screenshots/screenshot-03-trend-chart.png)
 
-默认指标为销售额，按日查看 6 月 1 日—6 月 18 日三条 Item ID 折线；另有花费、ROAS、CTR、平均 CPC、件数转化率、曝光、售出件数、加购物车、详情页浏览共 10 个指标页签。
+默认指标为销售额，按日查看 6 月 1 日—6 月 18 日三条 Item ID 折线；另有花费、ROAS、CTR、平均 CPC、件数转化率、订单转化率、曝光、售出件数、订单数、加购物车、详情页浏览共 12 个指标页签。
 
 **表现排名与快速洞察**
 
@@ -122,13 +126,16 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 | 6 | CTR |
 | 7 | Average CPC |
 | 8 | Total Units Sold - 30 Day |
-| 9 | Conversion Rate - 30 Day |
-| 10 | ROAS - 30 Day |
-| 11 | Advertised SKU Sales. - 30 Day |
-| 12 | Total Sales Rev. - 30 Day |
-| 13 | Advertised Add to Cart - 30 Day |
-| 14 | Advertised Product Detail Page Views - 30 Day |
-| 15 | Total Add to Cart - 30 Day |
+| 9 | Orders - 30 Day |
+| 10 | Conversion Rate - 30 Day |
+| 11 | ROAS - 30 Day |
+| 12 | Advertised SKU Sales. - 30 Day |
+| 13 | Total Sales Rev. - 30 Day |
+| 14 | Advertised Add to Cart - 30 Day |
+| 15 | Advertised Product Detail Page Views - 30 Day |
+| 16 | Total Add to Cart - 30 Day |
+
+模板包含270行虚构数据，覆盖五个版位。`Orders - 30 Day` 用于订单数和订单转化率；旧CSV无该字段仍可分析其他指标。未知订单数请留空，实际0才填0。可额外导出 `Clicks`，看板会优先使用精确点击数。
 
 **产品映射表模板字段**（`templates/product-mapping-template.csv`）：品类、后台 SKU、Item ID、SKU。映射表里不能有重复的 Item ID。
 
@@ -156,7 +163,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 - 近 3 / 7 / 30 天以报表最新日期为末日，包含当天，与紧邻的前 3 / 7 / 30 天比较。完整月比较最新已结束的自然月与其前一个月。
 - 自定义时间段 1 是对比期，时间段 2 是基期；开始和结束日期都计入。该区间独立于页面顶部和趋势图日期。
 - 差值 = 时间段 1 − 时间段 2；变化率 = 差值 ÷ 基期绝对值。基期为 0、对比期不为 0 时不显示无限大变化率。
-- 上涨用绿色 ↑，下跌用红色 ↓，持平灰色。CTR / 件数转化率的绝对变化单位为“百分点”。绿色仅表示数值增加；花费和 CPC 会附带成本解读。
+- 上涨用绿色 ↑，下跌用红色 ↓，持平灰色。CTR / 件数转化率 / 订单转化率的绝对变化单位为“百分点”。绿色仅表示数值增加；花费和 CPC 会附带成本解读。
 - 比率使用区间汇总数据重算。Clicks 存在时优先使用实际点击；否则按 Average CPC 折算，缺少有效 CPC 时使用曝光 × CTR。分母为 0 时显示“—”。
 - 任一区间没有该 Item 记录时显示“无数据”，不把它当作 0 计算涨跌；区间覆盖不足、天数不同或重叠均有提示。
 
@@ -165,14 +172,16 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 页面底部新增同名折叠说明，概览提示和卡片ⓘ可直接打开。完整文字见 [指标口径文档](docs/METRICS.md)。
 
 - “30 Day”是后台归因模型，不是最近30天筛选；Date范围决定汇总哪些报表行。
-- 件数转化率 = 归因售出件数 ÷ 计算用点击次数 × 100%，不等同于订单转化率，可能超过100%。
+- 件数转化率 = 归因售出件数 ÷ 计算用点击次数 × 100%，一单可多件，可能超过100%。
+- 订单转化率 = `Orders - 30 Day` 归因订单数合计 ÷ 计算用点击次数合计 × 100%。缺列或所选记录中存在空白订单数时，订单数和订单转化率显示“—”；实际0保留为0。
+- 兼容导出中的 `null`：订单为 `null`，且同行归因件数和销售额均为 `null` 或0时，按无归因成交的0处理，页面会提示。其他未知订单数不补0。
 - 表内逐项列明字段来源、汇总公式、点击折算/估算方式、加购回退和零分母处理。
 
 ![指标口径与使用说明](docs/images/screenshots/screenshot-07-metric-guide.jpg)
 
 ### 下载与源码
 
-- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.3-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
+- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.3.0-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
 - **修改功能**：React / TypeScript 原始代码在 [`source/`](source/)，环境、构建与重新打包方法见 [开发说明](docs/DEVELOPMENT.md)。
 - **下载模板**：[广告报表模板](templates/ads-report-template.csv) · [产品映射表模板](templates/product-mapping-template.csv)。
 
@@ -201,6 +210,13 @@ walmart-ads-trends/
 ```
 
 ### 最近更新
+
+**V1.3.0（2026-11-10）**
+
+- 支持 `Orders - 30 Day`，订单数、订单转化率与件数转化率分别展示，覆盖概览、版位、趋势、排名与12项时间段对比。
+- 旧CSV缺少订单数据时显示“—”，保留真实0；订单转化率点击为0时显示“—”，缺失趋势不补0。
+- 同步更新导入提示与指标说明。下载模板新增订单字段和五个版位的270行虚构示例，内置演示同步更新。
+
 
 **V1.2.3（2026-11-10）**
 
@@ -272,7 +288,7 @@ Walmart Ads Trends is a purely static single-page app. Open the page, upload two
 
 No sign-up, no Node.js, no server. Your report and mapping files are read and analyzed only in your current browser — nothing is uploaded anywhere.
 
-> On first open it shows built-in demo data (sample ads report, Jun 1–18, 2026: 18 days, 3 items, 162 valid rows). Uploading your own report replaces it with your data.
+> On first open it shows built-in demo data (sample ads report, Jun 1–18, 2026: 18 days, 3 items, 5 placements, 270 valid rows). Uploading your own report replaces it with your data.
 
 ### Get started
 
@@ -286,20 +302,22 @@ No sign-up, no Node.js, no server. Your report and mapping files are read and an
 | --- | --- | --- |
 | 📤 | Upload ads report | Drag-and-drop or pick a Walmart CSV; columns are matched by header name and can be reordered |
 | 🗺️ | Upload product mapping | Fields: category, backend SKU, Item ID, SKU; enables category / backend SKU / SKU analysis |
-| 📊 | Overview | 8 KPI cards: total ad spend, total sales (30-day attribution), overall ROAS, average CTR, average CPC, unit-based conversion rate, add-to-cart, product detail page views |
-| 🧩 | Placement breakdown | Homepage, Carousel and Search In-grid, each with 8 core metrics; plus a placement share pie chart and a comparison bar chart |
-| 📈 | Trend comparison | 10 metrics (spend, sales, ROAS, CTR, average CPC, unit-based conversion rate, impressions, units sold, add-to-cart, PDP views) as line charts, by day / week / month |
-| 🏆 | Performance ranking | Every Item ID ranked by attributed sales: spend, sales, units sold, ROAS, CTR, unit-based conversion rate |
+| 📊 | Overview | 10 KPI cards: total ad spend, total sales (30-day attribution), overall ROAS, average CTR, average CPC, unit-based conversion rate, order conversion rate, attributed orders, add-to-cart, product detail page views |
+| 🧩 | Placement breakdown | Demo data includes Homepage, Carousel, Buybox, Search In-grid and Browse In-grid, each with 10 core metrics; uploaded reports use their actual placements; plus a placement share pie chart and a comparison bar chart |
+| 📈 | Trend comparison | 12 metrics (spend, sales, ROAS, CTR, average CPC, unit-based and order conversion rates, impressions, units sold, orders, add-to-cart, PDP views) as line charts, by day / week / month |
+| 🏆 | Performance ranking | Every Item ID ranked by attributed sales: spend, sales, units sold, orders, ROAS, CTR, unit-based and order conversion rates |
 | 💡 | Quick insights | Auto-computed for the current filter: sales leader, best efficiency, top contributing placement, data coverage |
 | 🗓️ | Date filter | Custom range, plus Last 7 days / Last 30 days / All shortcuts |
-| 🔄 | Period comparison | Compare 3 / 7 / 30-day periods, complete calendar months or two custom ranges; expand each item to see all 10 metrics, absolute changes and percentage changes |
+| 🔄 | Period comparison | Compare 3 / 7 / 30-day periods, complete calendar months or two custom ranges; expand each item to see all 12 metrics, absolute changes and percentage changes |
 | 🔒 | Local only | Reports and mapping files are read and analyzed only in your browser |
 
 ### Report format
 
 Templates are downloadable from the page and included in `templates/`. **Columns are matched by normalized header name, regardless of order. Keep the template field names; missing required or duplicate headers produce an error.**
 
-**Ads report template** (`templates/ads-report-template.csv`): Date, Item Id, Placement, Impressions, Ad Spend, CTR, Average CPC, Total Units Sold - 30 Day, Conversion Rate - 30 Day, ROAS - 30 Day, Advertised SKU Sales. - 30 Day, Total Sales Rev. - 30 Day, Advertised Add to Cart - 30 Day, Advertised Product Detail Page Views - 30 Day, Total Add to Cart - 30 Day.
+**Ads report template** (`templates/ads-report-template.csv`): Date, Item Id, Placement, Impressions, Ad Spend, CTR, Average CPC, Total Units Sold - 30 Day, Orders - 30 Day, Conversion Rate - 30 Day, ROAS - 30 Day, Advertised SKU Sales. - 30 Day, Total Sales Rev. - 30 Day, Advertised Add to Cart - 30 Day, Advertised Product Detail Page Views - 30 Day, Total Add to Cart - 30 Day.
+
+Order conversion = sum of `Orders - 30 Day` ÷ calculation clicks × 100%. Unit conversion = attributed units ÷ calculation clicks × 100%. Old CSVs without orders remain supported with unavailable order metrics. The template contains only synthetic data for all five placements.
 
 **Product mapping template** (`templates/product-mapping-template.csv`): category, backend SKU, Item ID, SKU. Item IDs must not repeat.
 
@@ -320,6 +338,13 @@ This is a pre-built static site. **No Node.js, no `pnpm` needed** — any static
 3. Visit the URL and hard-refresh with `Ctrl+F5`; if the old page still shows, clear the server / CDN page cache for that URL.
 
 ### What's new
+
+**V1.3.0 (2026-11-10)**
+
+- Added attributed orders from `Orders - 30 Day` and a separate order conversion rate across the overview, placements, trends, ranking and 12-metric period comparison.
+- Missing order fields or blank order cells remain unavailable; actual zeros are preserved. Order conversion with zero clicks is unavailable, and missing trend points stay as gaps.
+- Updated guidance and the downloadable 16-column template with 270 synthetic rows across all five placements. The built-in demo uses the same sample data.
+
 
 **V1.2.3 (2026-11-10)**
 
@@ -363,9 +388,9 @@ No. Reports and mapping files are read and analyzed only in your browser and gon
 
 ### Download and development
 
-- Download `walmart-ads-trends-v1.2.3-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
+- Download `walmart-ads-trends-v1.3.0-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
 - Editable React / TypeScript files are in [`source/`](source/). See [development instructions](docs/DEVELOPMENT.md) for building and packaging.
-- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.3 (2026-11-10).
+- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.3.0 (2026-11-10).
 
 ### Feedback
 

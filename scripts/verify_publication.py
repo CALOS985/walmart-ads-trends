@@ -51,7 +51,7 @@ for path in ['templates/ads-report-template.csv', 'templates/product-mapping-tem
         errors.append(f'Missing template: {path}')
     if (ROOT / path).read_bytes() != (ROOT / 'source/public' / path).read_bytes():
         errors.append(f'Template differs from source: {path}')
-for text in ['指标口径与使用说明', '件数转化率', 'Total Sales Rev. - 30 Day', '时间段对比', '近 3 天 vs 前 3 天', '全部展开', '按字段名称自动识别，列顺序可自由调整', '粤ICP备2026054366号-1', 'https://calos985.github.io/', 'https://carloswiki.com/blog/']:
+for text in ['指标口径与使用说明', '件数转化率', '订单转化率', 'Orders - 30 Day', 'Total Sales Rev. - 30 Day', '时间段对比', '近 3 天 vs 前 3 天', '全部展开', '按字段名称自动识别，列顺序可自由调整', '粤ICP备2026054366号-1', 'https://calos985.github.io/', 'https://carloswiki.com/blog/']:
     if text not in bundle:
         errors.append(f'Missing expected UI text or link: {text}')
 for image in sorted((ROOT / 'docs/images/screenshots').glob('*.png')):
@@ -59,7 +59,12 @@ for image in sorted((ROOT / 'docs/images/screenshots').glob('*.png')):
     print(f'{image.name}: {width}x{height}')
 with (ROOT / 'templates/ads-report-template.csv').open(encoding='utf-8-sig', newline='') as handle:
     rows = list(csv.reader(handle))
-    assert len(rows[1]) == 15
+    assert len(rows[1]) == 16
+    assert 'Orders - 30 Day' in rows[1]
+    examples = [dict(zip(rows[1], row)) for row in rows[2:] if row]
+    assert len(examples) == 270
+    assert {row['Placement'] for row in examples} == {'Homepage', 'Carousel', 'Buybox', 'Search In-grid', 'Browse In-grid'}
+    assert all(row['Item Id'].startswith('DEMO-') for row in examples)
 if errors:
     raise SystemExit('\n'.join(errors))
 print(f'Publication checks passed: {len(links)} README links, {len(entry.links)} entry resources, templates and required UI content.')

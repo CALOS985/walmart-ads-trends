@@ -1,7 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { parseAdvertisingCsv, parseProductMappingCsv, parseReportDate } from "../app/csv.ts";
-import { METRICS, addRecord, emptyAggregate } from "../app/analytics.ts";
+import { METRICS, addRecord, addAggregate, emptyAggregate, formatMetric } from "../app/analytics.ts";
+import { createDemoData } from "../app/demo-data.ts";
+import { trendSegments } from "../app/trend-data.ts";
 import { calculateChange, compareItems, metricValue, presetPeriods, rangeDays, validPeriods, formatComparisonValue } from "../app/comparison.ts";
 
 const fields = ["Date", "Item Id", "Placement", "Impressions", "Ad Spend", "CTR", "Average CPC", "Total Units Sold - 30 Day",
@@ -46,12 +49,15 @@ test("dates reject invalid calendar days", () => {
   assert.ok(parseReportDate("29-Feb-24"));
 });
 
-test("dashboard uses attributed revenue and unit-based conversion, not order count or supplied ratios", () => {
+test("dashboard separates order and unit conversion and recomputes rates from source counts", () => {
   const cells = values.map((v, i) => ({ 7: "6", 8: "99%", 9: "888", 10: "$900", 11: "$60" }[i] ?? v));
   const [record] = parseAdvertisingCsv(csv([...fields, "Clicks", "Orders - 30 Day"], [...cells, "10", "3"]));
   const total = emptyAggregate();
   addRecord(total, record);
   assert.equal(total.sales, 60);
+  assert.equal(record.orders, 3);
+  assert.equal(total.orders, 3);
+  assert.equal(METRICS.orderConversion.value(total), 30);
   assert.equal(METRICS.conversion.value(total), 60);
   assert.notEqual(METRICS.conversion.value(total), 30);
   assert.notEqual(METRICS.conversion.value(total), record.conversion);
@@ -98,14 +104,108 @@ test("comparison aggregates each item and recomputes weighted ratios", () => {
   assert.deepEqual(calculateChange(3, 5), { delta: -2, percent: -40, direction: "down" });
 });
 
-test("all ten metrics have distinct totals and correct delta direction", () => {
-  const current = { spend: 60, sales: 180, impressions: 300, clicks: 30, units: 6, addToCart: 12, pdpViews: 45 };
-  const baseline = { spend: 20, sales: 100, impressions: 100, clicks: 5, units: 1, addToCart: 3, pdpViews: 8 };
-  const expected = { spend: 40, sales: 80, roas: -2, ctr: 5, cpc: -2, conversion: 0, impressions: 200, units: 5, addToCart: 9, pdpViews: 37 };
+test("all twelve metrics have correct deltas, with conversion changes in percentage points", () => {
+  const current = { spend: 60, sales: 180, impressions: 300, clicks: 30, units: 6, orders: 3, addToCart: 12, pdpViews: 45 };
+  const baseline = { spend: 20, sales: 100, impressions: 100, clicks: 5, units: 1, orders: 1, addToCart: 3, pdpViews: 8 };
+  const expected = { spend: 40, sales: 80, roas: -2, ctr: 5, cpc: -2, conversion: 0, orderConversion: -10, impressions: 200, units: 5, orders: 2, addToCart: 9, pdpViews: 37 };
   for (const key of Object.keys(expected) as (keyof typeof expected)[]) {
     assert.equal(calculateChange(metricValue(key, current, 1), metricValue(key, baseline, 1)).delta, expected[key]);
   }
   assert.equal(formatComparisonValue("ctr", 5, true), "+5 个百分点");
+  assert.equal(formatComparisonValue("orderConversion", -10, true), "−10 个百分点");
+});
+
+test("Orders is read by name in shuffled CSVs; old and blank orders stay unavailable, distinct from zero", () => {
+  const columns = [...fields, "Orders - 30 Day"];
+  const cells = [...values, "1,234"];
+  const expected = parseAdvertisingCsv(csv(columns, cells))[0];
+  assert.equal(expected.orders, 1234);
+  assert.deepEqual(parseAdvertisingCsv(csv(columns.toReversed(), cells.toReversed()))[0], expected);
+  const aggregate = (records: ReturnType<typeof parseAdvertisingCsv>) => {
+    const total = emptyAggregate(); records.forEach(row => addRecord(total, row)); return total;
+  };
+  for (const missing of [parseAdvertisingCsv(csv()), parseAdvertisingCsv(csv(columns, [...values, ""]))]) {
+    assert.equal(missing[0].orders, null);
+    const total = aggregate(missing);
+    assert.equal(formatMetric("orders", total), "—");
+    assert.equal(formatMetric("orderConversion", total), "—");
+    assert.equal(METRICS.conversion.value(total), 20);
+    addRecord(total, expected);
+    assert.equal(total.orders, null);
+    assert.equal(metricValue("orderConversion", total, 2), null);
+  }
+  const zero = aggregate(parseAdvertisingCsv(csv(columns, [...values, "0"])));
+  assert.equal(formatMetric("orders", zero), "0");
+  assert.equal(formatMetric("orderConversion", zero), "0.00%");
+  zero.clicks = 0;
+  assert.equal(formatMetric("orderConversion", zero), "—");
+  const target = emptyAggregate();
+  addAggregate(target, aggregate(parseAdvertisingCsv(csv())));
+  addAggregate(target, aggregate([expected]));
+  assert.equal(target.orders, null);
+});
+
+test("invalid order counts fail with a field-specific error", () => {
+  for (const invalid of ["-1", "1.5", "abc", "NaN", "Infinity", "9007199254740992"]) {
+    assert.throws(() => parseAdvertisingCsv(csv([...fields, "Orders - 30 Day"], [...values, invalid])), /Orders - 30 Day 必须为非负整数/);
+  }
+});
+
+test("Custom Reports literal null is zero only when units and revenue also report no attribution", () => {
+  const columns = [...fields, "Orders - 30 Day"];
+  for (const absent of ['null','0']) {
+    const cells = values.map((v,i)=>i === 7 || i === 11 ? absent : v);
+    const [row] = parseAdvertisingCsv(csv(columns,[...cells,'null']));
+    assert.equal(row.orders, 0);
+    assert.equal(row.ordersNullAsZero, true);
+  }
+  for (const cells of [values, values.map((v,i)=>i === 7 ? '0' : v), values.map((v,i)=>i === 7 || i === 11 ? '' : v)]) {
+    const [row] = parseAdvertisingCsv(csv(columns,[...cells,'null']));
+    assert.equal(row.orders, null);
+    assert.equal(row.ordersNullAsZero, false);
+  }
+});
+
+test("order conversion uses weighted totals in custom comparison periods", () => {
+  const columns = [...fields, "Orders - 30 Day", "Clicks"];
+  const records = [
+    ...parseAdvertisingCsv(csv(columns, [...values, "3", "10"])),
+    ...parseAdvertisingCsv(csv(columns, [...values.map((v,i)=>i === 0 ? "2026-11-08" : v), "2", "40"])),
+    ...parseAdvertisingCsv(csv(columns, [...values.map((v,i)=>i === 0 ? "2026-11-06" : v), "4", "20"])),
+  ];
+  const [item] = compareItems(records, presetPeriods("2026-11-09", "3"));
+  assert.equal(item.first.orders, 5);
+  assert.equal(item.second.orders, 4);
+  const current = metricValue("orderConversion", item.first, item.firstRows);
+  const baseline = metricValue("orderConversion", item.second, item.secondRows);
+  assert.equal(current, 10);
+  assert.equal(baseline, 20);
+  assert.equal(calculateChange(current, baseline).delta, -10);
+});
+
+test("trend gaps preserve zero values and never connect across missing order data", () => {
+  assert.deepEqual(trendSegments([null, 0, 2, null, 4, null]), [
+    [{index:1,value:0},{index:2,value:2}], [{index:4,value:4}],
+  ]);
+  assert.deepEqual(trendSegments([null,null]), []);
+});
+
+test("download template contains sixteen named fields, synthetic examples for all five placements and both conversion inputs", () => {
+  const text = readFileSync(new URL('../public/templates/ads-report-template.csv', import.meta.url), 'utf8');
+  const records = parseAdvertisingCsv(text);
+  assert.equal(records.length, 270);
+  assert.deepEqual([...new Set(records.map(row=>row.placement))].sort(), ['Homepage','Carousel','Buybox','Search In-grid','Browse In-grid'].sort());
+  assert.ok(records.every(row=>row.orders !== null && row.itemId.startsWith('DEMO-')));
+  assert.ok(records.every(row=>row.units === 0 ? row.orders === 0 : row.orders! > 0 && row.orders! <= row.units));
+  assert.ok(records.some(row=>row.orders !== row.units));
+  const demo = createDemoData();
+  assert.equal(records.length, demo.length);
+  records.forEach((row,index)=> {
+    assert.equal(row.orders, demo[index].orders);
+    assert.equal(row.units, demo[index].units);
+    assert.equal(row.placement, demo[index].placement);
+    assert.ok(Math.abs(row.clicks-demo[index].clicks)<1e-9);
+  });
 });
 
 test("union includes items only in one period; missing is not treated as zero", () => {

@@ -48,7 +48,7 @@ export function PeriodComparison({ records, selectedRecords, placement, latestDa
     <div className="card-header chart-header">
       <div><span className="section-number">03</span><div>
         <h2 id="period-comparison-title">时间段对比</h2>
-        <p>按 Item ID 展开 10 项指标，查看两个时间段的数值与涨跌。</p>
+        <p>按 Item ID 展开 {COMPARISON_METRICS.length} 项指标，查看两个时间段的数值与涨跌。</p>
       </div></div>
       <span className="item-count">{comparison.length} 个 Item ID</span>
     </div>
@@ -122,6 +122,6 @@ export function PeriodComparison({ records, selectedRecords, placement, latestDa
         </details>)}
       </div>
     </>}
-    <p className="comparison-footnote">归因销售额等“30 Day”字段使用后台30天归因模型，不代表最近30天；本区间由上方两组日期决定。件数转化率 = 归因售出件数 ÷ 点击次数 × 100%，不是订单转化率。ROAS、CTR、平均 CPC 和件数转化率按区间汇总重算，不平均每日比率；分母为0时显示“—”。有 Clicks 列时优先读取，否则按 Average CPC 折算点击，缺少有效 CPC 时按曝光 × CTR 估算。完整月快捷区间使用最新已结束的自然月。更多说明见页脚“指标口径与使用说明”。</p>
+    <p className="comparison-footnote">归因销售额、订单数等“30 Day”字段使用后台30天归因模型，不代表最近30天；本区间由上方两组日期决定。订单转化率 = 归因订单数 ÷ 点击次数 × 100%，件数转化率 = 归因售出件数 ÷ 点击次数 × 100%。ROAS、CTR、平均 CPC 和两种转化率按区间汇总重算，不平均每日比率；分母为0时显示“—”。缺少或存在空白订单数时，相关区间订单指标显示“—”，不计算涨跌。有 Clicks 列时优先读取，否则按 Average CPC 折算点击，缺少有效 CPC 时按曝光 × CTR 估算。完整月快捷区间使用最新已结束的自然月。更多说明见页脚“指标口径与使用说明”。</p>
   </section>;
 }

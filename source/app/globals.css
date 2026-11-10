@@ -766,7 +766,7 @@ summary:focus-visible {
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1539,7 +1539,7 @@ tr:first-child .rank {
 }
 
 .placement-metrics-table {
-  min-width: 1080px;
+  min-width: 1240px;
 }
 
 .placement-metrics-table th,

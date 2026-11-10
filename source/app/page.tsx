@@ -8,12 +8,14 @@ import {
   useRef,
   useState,
 } from "react";
+import { createDemoData } from "./demo-data";
+import { trendSegments } from "./trend-data";
 import { PlacementCharts } from "./placement-charts";
 import { PeriodComparison } from "./period-comparison";
 import { MetricGuide } from "./metric-guide";
-import { ATTRIBUTION_NOTE, UNIT_CONVERSION_NOTE, CLICK_NOTE } from "./metric-definitions";
+import { ATTRIBUTION_NOTE, UNIT_CONVERSION_NOTE, ORDER_CONVERSION_NOTE, CLICK_NOTE } from "./metric-definitions";
 import type { AdRecord, Aggregate, AnalysisDimension, Granularity, MetricKey, ProductMapping } from "./analytics";
-import { METRICS, safeDivide, emptyAggregate, addRecord, addAggregate, formatMoney, formatNumber, toIsoDate, formatShortDate } from "./analytics";
+import { METRICS, formatMetric, safeDivide, emptyAggregate, addRecord, addAggregate, formatMoney, formatNumber, toIsoDate, formatShortDate } from "./analytics";
 import { parseReportDate, parseAdvertisingCsv, parseProductMappingCsv, readCsvFile } from "./csv";
 
 type FileMeta = {
@@ -53,59 +55,6 @@ const DIMENSIONS: Record<
   backendSku: { label: "后台 SKU", countLabel: "后台 SKU" },
   sku: { label: "SKU", countLabel: "SKU" },
 };
-
-function createDemoData() {
-  const itemIds = ["DEMO-3021", "DEMO-5748", "DEMO-8162"];
-  const placements = ["Search In-grid", "Carousel", "Homepage"];
-  const rows: AdRecord[] = [];
-  for (let day = 0; day < 18; day += 1) {
-    for (let itemIndex = 0; itemIndex < itemIds.length; itemIndex += 1) {
-      for (
-        let placementIndex = 0;
-        placementIndex < placements.length;
-        placementIndex += 1
-      ) {
-        const pulse =
-          1 +
-          Math.sin((day + itemIndex * 1.7 + placementIndex) * 0.72) * 0.28;
-        const impressions = Math.round(
-          (1800 + itemIndex * 920 + placementIndex * 420) * pulse,
-        );
-        const ctr = 0.38 + itemIndex * 0.17 + placementIndex * 0.08;
-        const spend =
-          impressions * (ctr / 100) * (0.78 + itemIndex * 0.16);
-        const clicks = impressions * (ctr / 100);
-        const units = Math.max(
-          0,
-          Math.round(
-            impressions *
-              (ctr / 100) *
-              (0.075 + itemIndex * 0.018) *
-              pulse,
-          ),
-        );
-        const sales = units * (42 + itemIndex * 13);
-        rows.push({
-          date: new Date(2026, 5, 1 + day, 12),
-          itemId: itemIds[itemIndex],
-          placement: placements[placementIndex],
-          impressions,
-          spend,
-          ctr,
-          clicks,
-          units,
-          conversion: 0,
-          reportedRoas: safeDivide(sales, spend),
-          skuSales: sales * 0.93,
-          sales,
-          addToCart: Math.round(units * 2.2),
-          pdpViews: Math.round(impressions * (ctr / 100) * 1.45),
-        });
-      }
-    }
-  }
-  return rows;
-}
 
 function periodForDate(date: Date, granularity: Granularity) {
   if (granularity === "month") {
@@ -336,7 +285,9 @@ export default function Home() {
         itemId: value,
         color: ITEM_COLORS[index % ITEM_COLORS.length],
         values: periods.map((key) => {
-          const aggregate = buckets.get(key)?.get(value) ?? emptyAggregate();
+          const bucket = buckets.get(key)?.get(value);
+          if (!bucket && (metric === "orders" || metric === "orderConversion")) return null;
+          const aggregate = bucket ?? emptyAggregate();
           return METRICS[metric].value(aggregate);
         }),
       })),
@@ -551,7 +502,7 @@ export default function Home() {
               </strong>
               <p>
                 {fileMeta.isDemo
-                  ? "支持 Walmart CSV，可拖拽或选择文件；按字段名称自动识别，列顺序可自由调整，请保留模板字段名称。导入模板可以从网站下载，并根据示例模板配置好沃尔玛广告后台Custom Reports字段模板并保存"
+                  ? "支持 Walmart CSV，可拖拽或选择文件；按字段名称自动识别，列顺序可自由调整，请保留模板字段名称。导入模板可以从网站下载，并根据示例模板配置好沃尔玛广告后台 Custom Reports 字段模板并保存。新版模板已含 Orders - 30 Day，可分别计算订单转化率和件数转化率。"
                   : `${formatNumber(fileMeta.rows)} 行数据 · ${itemIds.length} 个 Item ID · ${formatShortDate(bounds.min)}—${formatShortDate(bounds.max)}`}
               </p>
             </div>
@@ -801,9 +752,18 @@ export default function Home() {
 
         <p className="metric-context-note">
           <strong>口径提示</strong>
-          <span>“30天”是后台归因模型，统计范围由所选日期决定；件数转化率 = 归因售出件数 ÷ 点击次数 × 100%，不是订单转化率。</span>
+          <span>“30天”是后台归因模型，统计范围由所选日期决定；订单转化率 = 归因订单数 ÷ 点击次数 × 100%，件数转化率 = 归因售出件数 ÷ 点击次数 × 100%。</span>
           <a href="#metric-guide" onClick={event => { event.preventDefault(); showMetricGuide(); }}>查看指标口径与使用说明 ↓</a>
         </p>
+
+        {total.orders === null && <p className="metric-context-note" role="status">
+          <strong>订单数据缺失</strong>
+          <span>当前筛选记录的 Orders - 30 Day 缺列、空白或存在未知值；订单数和订单转化率显示“—”。请检查或补充该字段后重新导出，其他指标可继续分析。</span>
+        </p>}
+        {filteredRecords.some(row => row.ordersNullAsZero) && <p className="metric-context-note" role="status">
+          <strong>null 值兼容</strong>
+          <span>{formatNumber(filteredRecords.filter(row => row.ordersNullAsZero).length)} 行订单数为 null，且同行归因件数、销售额均为 null 或0，按无归因成交的0计入；真正缺列、空白或不一致的 null 仍视为未知。</span>
+        </p>}
 
         <section className="kpi-grid">
           <KpiCard
@@ -849,10 +809,28 @@ export default function Home() {
             tone="red"
             label="件数转化率"
             value={`${(safeDivide(total.units, total.clicks) * 100).toFixed(2)}%`}
-            detail={`${formatNumber(total.units)} 件归因售出 · 非订单转化率`}
+            detail={`${formatNumber(total.units)} 件归因售出 · 件数 ÷ 点击`}
             info={UNIT_CONVERSION_NOTE}
             onShowGuide={showMetricGuide}
             icon="✓"
+          />
+          <KpiCard
+            tone="cyan"
+            label="订单转化率"
+            value={formatMetric("orderConversion", total)}
+            detail={total.orders === null ? "缺少订单数据，请添加 Orders - 30 Day" : "归因订单数 ÷ 计算用点击次数"}
+            info={ORDER_CONVERSION_NOTE}
+            onShowGuide={showMetricGuide}
+            icon="%"
+          />
+          <KpiCard
+            tone="blue"
+            label="归因订单数（30天模型）"
+            value={filteredRecords.length ? formatMetric("orders", total) : "—"}
+            detail={total.orders === null ? "缺少或存在空白的 Orders - 30 Day" : "按所选日期汇总 · 订单数与件数分开"}
+            info={ORDER_CONVERSION_NOTE}
+            onShowGuide={showMetricGuide}
+            icon="#"
           />
           <KpiCard
             tone="amber"
@@ -874,7 +852,7 @@ export default function Home() {
           <div className="placement-overview-header">
             <div>
               <h3>各广告版位数据</h3>
-              <p>同一筛选范围内，按版位汇总 8 项核心广告指标</p>
+              <p>同一筛选范围内，按版位汇总 10 项核心广告指标</p>
             </div>
             <span>{placementSummary.length} 个版位</span>
           </div>
@@ -889,6 +867,8 @@ export default function Home() {
                   <th>平均 CTR</th>
                   <th>平均 CPC</th>
                   <th>件数转化率</th>
+                  <th>订单转化率</th>
+                  <th>归因订单数</th>
                   <th>加购物车数量</th>
                   <th>详情页浏览</th>
                 </tr>
@@ -932,6 +912,8 @@ export default function Home() {
                       ).toFixed(2)}
                       %
                     </td>
+                    <td>{formatMetric("orderConversion", aggregate)}</td>
+                    <td>{formatMetric("orders", aggregate)}</td>
                     <td>{formatNumber(aggregate.addToCart)}</td>
                     <td>{formatNumber(aggregate.pdpViews)}</td>
                   </tr>
@@ -1083,9 +1065,11 @@ export default function Home() {
                     <th>广告花费</th>
                     <th>归因销售额</th>
                     <th>售出件数</th>
+                    <th>归因订单数</th>
                     <th>ROAS</th>
                     <th>CTR</th>
                     <th>件数转化率</th>
+                    <th>订单转化率</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1111,6 +1095,7 @@ export default function Home() {
                         {formatMoney(aggregate.sales)}
                       </td>
                       <td>{formatNumber(aggregate.units)}</td>
+                      <td>{formatMetric("orders", aggregate)}</td>
                       <td>
                         <span
                           className={`roas-badge ${
@@ -1139,6 +1124,7 @@ export default function Home() {
                         ).toFixed(2)}
                         %
                       </td>
+                      <td>{formatMetric("orderConversion", aggregate)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1350,7 +1336,7 @@ function TrendChart({
   dimensionLabel,
 }: {
   periods: { key: string; label: string }[];
-  series: { itemId: string; color: string; values: number[] }[];
+  series: { itemId: string; color: string; values: (number | null)[] }[];
   metric: MetricKey;
   dimensionLabel: string;
 }) {
@@ -1360,7 +1346,7 @@ function TrendChart({
   const margin = { left: 70, right: 24, top: 24, bottom: 64 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const values = series.flatMap((line) => line.values);
+  const values = series.flatMap((line) => line.values).filter((value): value is number => value !== null);
   const maxValue = Math.max(1, ...values) * 1.12;
   const xAt = (index: number) =>
     margin.left +
@@ -1377,46 +1363,45 @@ function TrendChart({
     let nearestDistance = Number.POSITIVE_INFINITY;
 
     series.forEach((line) => {
-      const coordinates = line.values.map((value, index) => ({
-        x: xAt(index),
-        y: yAt(value),
-      }));
-      if (coordinates.length === 1) {
-        const distance = Math.hypot(
-          pointerX - coordinates[0].x,
-          pointerY - coordinates[0].y,
-        );
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearestItemId = line.itemId;
+      trendSegments(line.values).forEach(segment => {
+        const coordinates = segment.map(({ value, index }) => ({ x: xAt(index), y: yAt(value) }));
+        if (coordinates.length === 1) {
+          const distance = Math.hypot(
+            pointerX - coordinates[0].x,
+            pointerY - coordinates[0].y,
+          );
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestItemId = line.itemId;
+          }
+          return;
         }
-        return;
-      }
-      for (let index = 1; index < coordinates.length; index += 1) {
-        const distance = distanceToLineSegment(
-          pointerX,
-          pointerY,
-          coordinates[index - 1].x,
-          coordinates[index - 1].y,
-          coordinates[index].x,
-          coordinates[index].y,
-        );
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearestItemId = line.itemId;
+        for (let index = 1; index < coordinates.length; index += 1) {
+          const distance = distanceToLineSegment(
+            pointerX,
+            pointerY,
+            coordinates[index - 1].x,
+            coordinates[index - 1].y,
+            coordinates[index].x,
+            coordinates[index].y,
+          );
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestItemId = line.itemId;
+          }
         }
-      }
+      });
     });
 
     setHoveredItemId(nearestDistance <= 12 ? nearestItemId : null);
   }
 
-  if (!periods.length) {
+  if (!periods.length || !values.length) {
     return (
       <div className="chart-empty">
         <span>⌁</span>
-        <strong>当前筛选条件下暂无趋势数据</strong>
-        <p>请调整{dimensionLabel}、版位或时间范围。</p>
+        <strong>{periods.length && !values.length ? "缺少可计算的订单数据" : "当前筛选条件下暂无趋势数据"}</strong>
+        <p>{periods.length && !values.length ? "请导入含 Orders - 30 Day 的报表；订单转化率还需有效点击次数。" : `请调整${dimensionLabel}、版位或时间范围。`}</p>
       </div>
     );
   }
@@ -1505,78 +1490,29 @@ function TrendChart({
         })}
 
         {series.map((line, seriesIndex) => {
-          const points = line.values
-            .map((value, index) => `${xAt(index)},${yAt(value)}`)
-            .join(" ");
-          const areaPoints = `${margin.left},${margin.top + plotHeight} ${points} ${xAt(periods.length - 1)},${margin.top + plotHeight}`;
           const isHovered = hoveredItemId === line.itemId;
           const isDimmed = hoveredItemId !== null && !isHovered;
-          return (
-            <g
-              key={line.itemId}
-              className={`chart-series ${isHovered ? "is-hovered" : ""} ${isDimmed ? "is-dimmed" : ""}`}
-            >
-              {seriesIndex === 0 && (
-                <polygon
-                  points={areaPoints}
-                  fill={line.color}
-                  opacity="0.07"
-                />
-              )}
-              {isHovered && (
-                <>
-                  <polyline
-                    points={points}
-                    fill="none"
-                    stroke="#162b44"
-                    strokeWidth="10"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    className="series-outline"
-                  />
-                  <polyline
-                    points={points}
-                    fill="none"
-                    stroke="#fff"
-                    strokeWidth="7"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    className="series-halo"
-                  />
-                </>
-              )}
-              <polyline
-                points={points}
-                fill="none"
-                stroke={line.color}
-                strokeWidth="3"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                className="series-path"
-                tabIndex={0}
-                aria-label={`${dimensionLabel} ${line.itemId} 的${METRICS[metric].label}折线`}
-                onFocus={() => setHoveredItemId(line.itemId)}
-                onBlur={() => setHoveredItemId(null)}
-              />
-              {line.values.map((value, index) => (
-                <circle
-                  key={`${line.itemId}-${periods[index].key}`}
-                  cx={xAt(index)}
-                  cy={yAt(value)}
-                  r="4"
-                  fill="#fff"
-                  stroke={line.color}
-                  strokeWidth="2.5"
-                  className={`data-point ${isHovered ? "active" : ""}`}
-                >
-                  <title>
-                    {line.itemId} · {periods[index].label}:{" "}
-                    {METRICS[metric].format(value)}
-                  </title>
-                </circle>
-              ))}
-            </g>
-          );
+          return <g key={line.itemId}
+            className={`chart-series ${isHovered ? "is-hovered" : ""} ${isDimmed ? "is-dimmed" : ""}`}>
+            {trendSegments(line.values).map(segment => {
+              const points = segment.map(({value, index}) => `${xAt(index)},${yAt(value)}`).join(" ");
+              const areaPoints = `${xAt(segment[0].index)},${margin.top + plotHeight} ${points} ${xAt(segment[segment.length - 1].index)},${margin.top + plotHeight}`;
+              return <g key={segment[0].index}>
+                {seriesIndex === 0 && <polygon points={areaPoints} fill={line.color} opacity="0.07" />}
+                {isHovered && <>
+                  <polyline points={points} fill="none" stroke="#162b44" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round" className="series-outline" />
+                  <polyline points={points} fill="none" stroke="#fff" strokeWidth="7" strokeLinejoin="round" strokeLinecap="round" className="series-halo" />
+                </>}
+                <polyline points={points} fill="none" stroke={line.color} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round"
+                  className="series-path" tabIndex={0} aria-label={`${dimensionLabel} ${line.itemId} 的${METRICS[metric].label}折线`}
+                  onFocus={() => setHoveredItemId(line.itemId)} onBlur={() => setHoveredItemId(null)} />
+                {segment.map(({value, index}) => <circle key={periods[index].key} cx={xAt(index)} cy={yAt(value)} r="4" fill="#fff"
+                  stroke={line.color} strokeWidth="2.5" className={`data-point ${isHovered ? "active" : ""}`}>
+                  <title>{line.itemId} · {periods[index].label}: {METRICS[metric].format(value)}</title>
+                </circle>)}
+              </g>;
+            })}
+          </g>;
         })}
       </svg>
     </div>

@@ -78,7 +78,7 @@ export function compareItems(records: AdRecord[], periods: ComparisonPeriods) {
 export function metricValue(key: MetricKey, aggregate: Aggregate, rows: number): number | null {
   if (!rows) return null;
   const denominator = key === "roas" ? aggregate.spend : key === "ctr" ? aggregate.impressions
-    : key === "cpc" || key === "conversion" ? aggregate.clicks : null;
+    : key === "cpc" || key === "conversion" || key === "orderConversion" ? aggregate.clicks : null;
   if (denominator === 0) return null;
   return METRICS[key].value(aggregate);
 }
@@ -97,7 +97,7 @@ export function formatComparisonValue(key: MetricKey, value: number | null, delt
     maximumFractionDigits: delta && Math.abs(value) > 0 && Math.abs(value) < 0.01 ? 4 : 2 }).format(Math.abs(value));
   const sign = delta ? (value > 0 ? "+" : value < 0 ? "−" : "") : value < 0 ? "−" : "";
   if (key === "spend" || key === "sales" || key === "cpc") return `${sign}US$${number}`;
-  if (key === "ctr" || key === "conversion") return `${sign}${number}${delta ? " 个百分点" : "%"}`;
+  if (key === "ctr" || key === "conversion" || key === "orderConversion") return `${sign}${number}${delta ? " 个百分点" : "%"}`;
   if (key === "roas") return `${sign}${number}x`;
   return `${sign}${number}`;
 }
@@ -111,5 +111,6 @@ export function changeInterpretation(key: MetricKey, direction: ReturnType<typeo
   if (key === "roas") return up ? "投入回报提升" : "投入回报回落";
   if (key === "ctr") return up ? "点击效率提升" : "点击效率回落";
   if (key === "conversion") return up ? "件数转化率提升" : "件数转化率回落";
+  if (key === "orderConversion") return up ? "订单转化率提升" : "订单转化率回落";
   return up ? "规模增加，结合效率判断" : "规模减少，结合效率判断";
 }

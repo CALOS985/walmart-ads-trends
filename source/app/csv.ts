@@ -137,10 +137,21 @@ export function parseAdvertisingCsv(text: string) {
 
   const records = rawRows
     .slice(headerIndex + 1)
-    .map((row): AdRecord | null => {
+    .map((row, rowIndex): AdRecord | null => {
       const date = parseReportDate(pick(row, "Date"));
       const itemId = pick(row, "Item Id").trim();
       if (!date || !itemId) return null;
+      const orderText = pick(row, "Orders - 30 Day").trim();
+      const reportedNoAttribution = (value: string) => /^(null|0(?:\.0+)?)$/i.test(value.replace(/[$,\s]/g, ""));
+      // Custom Reports may export null for every attribution count on rows with no attributed sale.
+      // Only interpret that specific combination as zero; missing or inconsistent inputs stay unknown.
+      const ordersNullAsZero = /^null$/i.test(orderText)
+        && reportedNoAttribution(pick(row, "Total Units Sold - 30 Day"))
+        && reportedNoAttribution(pick(row, "Total Sales Rev. - 30 Day"));
+      const orders = ordersNullAsZero ? 0 : orderText === "" || /^null$/i.test(orderText) ? null : Number(orderText.replace(/,/g, ""));
+      if (orders !== null && (!Number.isSafeInteger(orders) || orders < 0)) {
+        throw new Error(`第 ${headerIndex + rowIndex + 2} 行 Orders - 30 Day 必须为非负整数；未知订单数请留空，不要填 0。`);
+      }
       const impressions = parseNumeric(pick(row, "Impressions"));
       const spend = parseNumeric(pick(row, "Ad Spend"));
       const ctr = parseNumeric(pick(row, "CTR"));
@@ -163,6 +174,8 @@ export function parseAdvertisingCsv(text: string) {
         ctr,
         clicks,
         units: parseNumeric(pick(row, "Total Units Sold - 30 Day")),
+        orders,
+        ordersNullAsZero,
         conversion: parseNumeric(pick(row, "Conversion Rate - 30 Day")),
         reportedRoas: parseNumeric(pick(row, "ROAS - 30 Day")),
         skuSales: parseNumeric(

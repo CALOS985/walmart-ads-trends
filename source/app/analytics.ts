@@ -7,8 +7,10 @@ export type MetricKey =
   | "ctr"
   | "cpc"
   | "conversion"
+  | "orderConversion"
   | "impressions"
   | "units"
+  | "orders"
   | "addToCart"
   | "pdpViews";
 
@@ -21,6 +23,8 @@ export type AdRecord = {
   ctr: number;
   clicks: number;
   units: number;
+  orders: number | null;
+  ordersNullAsZero?: boolean;
   conversion: number;
   reportedRoas: number;
   skuSales: number;
@@ -35,6 +39,7 @@ export type Aggregate = {
   impressions: number;
   clicks: number;
   units: number;
+  orders: number | null;
   addToCart: number;
   pdpViews: number;
 };
@@ -52,7 +57,7 @@ export const METRICS: Record<
     label: string;
     shortLabel: string;
     color: string;
-    value: (aggregate: Aggregate) => number;
+    value: (aggregate: Aggregate) => number | null;
     format: (value: number) => string;
   }
 > = {
@@ -98,6 +103,13 @@ export const METRICS: Record<
     value: (a) => safeDivide(a.units, a.clicks) * 100,
     format: (v) => `${v.toFixed(2)}%`,
   },
+  orderConversion: {
+    label: "订单转化率（30天模型）",
+    shortLabel: "订单转化率",
+    color: "#167f8c",
+    value: (a) => a.orders === null || a.clicks === 0 ? null : a.orders / a.clicks * 100,
+    format: (v) => `${v.toFixed(2)}%`,
+  },
   impressions: {
     label: "广告曝光",
     shortLabel: "曝光",
@@ -110,6 +122,13 @@ export const METRICS: Record<
     shortLabel: "售出件数",
     color: "#12a878",
     value: (a) => a.units,
+    format: (v) => formatNumber(v),
+  },
+  orders: {
+    label: "归因订单数（30天模型）",
+    shortLabel: "订单数",
+    color: "#4265c6",
+    value: (a) => a.orders,
     format: (v) => formatNumber(v),
   },
   addToCart: {
@@ -128,6 +147,11 @@ export const METRICS: Record<
   },
 };
 
+export function formatMetric(key: MetricKey, aggregate: Aggregate) {
+  const value = METRICS[key].value(aggregate);
+  return value === null ? "—" : METRICS[key].format(value);
+}
+
 export function safeDivide(numerator: number, denominator: number) {
   return denominator ? numerator / denominator : 0;
 }
@@ -139,6 +163,7 @@ export function emptyAggregate(): Aggregate {
     impressions: 0,
     clicks: 0,
     units: 0,
+    orders: 0,
     addToCart: 0,
     pdpViews: 0,
   };
@@ -150,6 +175,7 @@ export function addRecord(aggregate: Aggregate, row: AdRecord) {
   aggregate.impressions += row.impressions;
   aggregate.clicks += row.clicks;
   aggregate.units += row.units;
+  aggregate.orders = aggregate.orders === null || row.orders === null ? null : aggregate.orders + row.orders;
   aggregate.addToCart += row.addToCart;
   aggregate.pdpViews += row.pdpViews;
 }
@@ -160,6 +186,7 @@ export function addAggregate(target: Aggregate, source: Aggregate) {
   target.impressions += source.impressions;
   target.clicks += source.clicks;
   target.units += source.units;
+  target.orders = target.orders === null || source.orders === null ? null : target.orders + source.orders;
   target.addToCart += source.addToCart;
   target.pdpViews += source.pdpViews;
 }
