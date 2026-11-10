@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseAdvertisingCsv, parseProductMappingCsv, parseReportDate } from "../app/csv.ts";
-import { emptyAggregate } from "../app/analytics.ts";
+import { METRICS, addRecord, emptyAggregate } from "../app/analytics.ts";
 import { calculateChange, compareItems, metricValue, presetPeriods, rangeDays, validPeriods, formatComparisonValue } from "../app/comparison.ts";
 
 const fields = ["Date", "Item Id", "Placement", "Impressions", "Ad Spend", "CTR", "Average CPC", "Total Units Sold - 30 Day",
@@ -44,6 +44,21 @@ test("dates reject invalid calendar days", () => {
   assert.equal(parseReportDate("2026-02-30"), null);
   assert.equal(parseReportDate("31-Feb-26"), null);
   assert.ok(parseReportDate("29-Feb-24"));
+});
+
+test("dashboard uses attributed revenue and unit-based conversion, not order count or supplied ratios", () => {
+  const cells = values.map((v, i) => ({ 7: "6", 8: "99%", 9: "888", 10: "$900", 11: "$60" }[i] ?? v));
+  const [record] = parseAdvertisingCsv(csv([...fields, "Clicks", "Orders - 30 Day"], [...cells, "10", "3"]));
+  const total = emptyAggregate();
+  addRecord(total, record);
+  assert.equal(total.sales, 60);
+  assert.equal(METRICS.conversion.value(total), 60);
+  assert.notEqual(METRICS.conversion.value(total), 30);
+  assert.notEqual(METRICS.conversion.value(total), record.conversion);
+  assert.equal(METRICS.roas.value(total), 3);
+  assert.notEqual(METRICS.roas.value(total), record.reportedRoas);
+  total.units = 12;
+  assert.equal(METRICS.conversion.value(total), 120);
 });
 
 test("3/7/30 day presets include the latest date with no gap or overlap", () => {

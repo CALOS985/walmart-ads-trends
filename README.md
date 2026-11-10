@@ -57,10 +57,10 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 | --- | --- | --- |
 | 📤 | 上传广告报表 | 支持拖拽或选择 Walmart CSV；按字段名称自动识别；CSV 列顺序可调整 |
 | 🗺️ | 上传产品映射表 | 字段：品类、后台 SKU、Item ID、SKU；上传后可按品类 / 后台 SKU / SKU 维度分析 |
-| 📊 | 数据概览 | 8 张 KPI 卡片：总广告花费、总销售额（30 天归因）、整体 ROAS、平均 CTR、平均 CPC、30 天转化率、加购物车数量、详情页浏览 |
+| 📊 | 数据概览 | 8 张 KPI 卡片：总广告花费、归因销售额（30天模型）、整体 ROAS、平均 CTR、平均 CPC、件数转化率、加购物车数量、详情页浏览 |
 | 🧩 | 各广告版位数据 | Homepage、Carousel、Search In-grid 三个版位，各汇总 8 项核心指标；另有版位占比饼状图与版位对比柱状图 |
-| 📈 | 趋势对比 | 花费、销售额、ROAS、CTR、平均 CPC、转化率、曝光、售出件数、加购物车、详情页浏览共 10 个指标，按日 / 按周 / 按月看折线变化 |
-| 🏆 | 表现排名 | 按归因销售额从高到低排列每个 Item ID：花费、销售额、售出件数、ROAS、CTR、转化率 |
+| 📈 | 趋势对比 | 花费、销售额、ROAS、CTR、平均 CPC、件数转化率、曝光、售出件数、加购物车、详情页浏览共 10 个指标，按日 / 按周 / 按月看折线变化 |
+| 🏆 | 表现排名 | 按归因销售额从高到低排列每个 Item ID：花费、销售额、售出件数、ROAS、CTR、件数转化率 |
 | 💡 | 快速洞察 | 基于当前筛选自动计算：销售额领先、投放效率最佳、贡献最高版位、数据覆盖天数与有效记录数 |
 | 🗓️ | 时间筛选 | 自定义时间段，另有近 7 天、近 30 天、全部快捷按钮 |
 | 🔄 | 时间段对比 | 在 Item ID 表现排名上方，近 3 / 7 / 30 天及完整自然月快捷对比，也可自选两个区间；按 Item ID 展开 10 项指标的两个区间数值、差值与变化率 |
@@ -80,7 +80,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 ![上传区与数据概览](docs/images/screenshots/screenshot-01-upload-overview.png)
 
-演示数据示例：总广告花费 US$3,407（3,420 次折算点击）、总销售额 US$22,126（30 天归因销售收入）、整体 ROAS 6.49x、平均 CTR 0.67%（510,513 次曝光）、平均 CPC US$1.00、30 天转化率 10.64%（364 件售出）、加购物车 783、详情页浏览 4,955。
+演示数据示例：总广告花费 US$3,407（3,420 次计算用点击）、总销售额 US$22,126（30天模型归因销售收入）、整体 ROAS 6.49x、平均 CTR 0.67%（510,513 次曝光）、平均 CPC US$1.00、件数转化率 10.64%（364 件售出）、加购物车 783、详情页浏览 4,955。
 
 **各广告版位数据**
 
@@ -92,7 +92,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 ![趋势对比](docs/images/screenshots/screenshot-03-trend-chart.png)
 
-默认指标为销售额，按日查看 6 月 1 日—6 月 18 日三条 Item ID 折线；另有花费、ROAS、CTR、平均 CPC、转化率、曝光、售出件数、加购物车、详情页浏览共 10 个指标页签。
+默认指标为销售额，按日查看 6 月 1 日—6 月 18 日三条 Item ID 折线；另有花费、ROAS、CTR、平均 CPC、件数转化率、曝光、售出件数、加购物车、详情页浏览共 10 个指标页签。
 
 **表现排名与快速洞察**
 
@@ -147,7 +147,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 **任意静态服务器**
 
 1. 把仓库文件上传到服务器的网站目录（如 `Walmart Trends`）。
-2. 解压后 `index.html`、`assets/`、`templates/`、`favicon.svg`、`og.png` 应直接位于该目录内，不要额外套一层同名子文件夹。
+2. 解压后 `index.html`、`assets/`、`templates/`、`favicon.png`、`favicon.svg`、`og.png` 应直接位于该目录内，不要额外套一层同名子文件夹。
 3. 访问对应网址并按 `Ctrl+F5` 强制刷新；如果仍显示旧页面，清除该网址的服务器或 CDN 页面缓存后重试。
 
 ### 时间段对比的计算规则
@@ -156,13 +156,23 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 - 近 3 / 7 / 30 天以报表最新日期为末日，包含当天，与紧邻的前 3 / 7 / 30 天比较。完整月比较最新已结束的自然月与其前一个月。
 - 自定义时间段 1 是对比期，时间段 2 是基期；开始和结束日期都计入。该区间独立于页面顶部和趋势图日期。
 - 差值 = 时间段 1 − 时间段 2；变化率 = 差值 ÷ 基期绝对值。基期为 0、对比期不为 0 时不显示无限大变化率。
-- 上涨用绿色 ↑，下跌用红色 ↓，持平灰色。CTR / 转化率的绝对变化单位为“百分点”。绿色仅表示数值增加；花费和 CPC 会附带成本解读。
+- 上涨用绿色 ↑，下跌用红色 ↓，持平灰色。CTR / 件数转化率的绝对变化单位为“百分点”。绿色仅表示数值增加；花费和 CPC 会附带成本解读。
 - 比率使用区间汇总数据重算。Clicks 存在时优先使用实际点击；否则按 Average CPC 折算，缺少有效 CPC 时使用曝光 × CTR。分母为 0 时显示“—”。
 - 任一区间没有该 Item 记录时显示“无数据”，不把它当作 0 计算涨跌；区间覆盖不足、天数不同或重叠均有提示。
 
+### 指标口径与使用说明
+
+页面底部新增同名折叠说明，概览提示和卡片ⓘ可直接打开。完整文字见 [指标口径文档](docs/METRICS.md)。
+
+- “30 Day”是后台归因模型，不是最近30天筛选；Date范围决定汇总哪些报表行。
+- 件数转化率 = 归因售出件数 ÷ 计算用点击次数 × 100%，不等同于订单转化率，可能超过100%。
+- 表内逐项列明字段来源、汇总公式、点击折算/估算方式、加购回退和零分母处理。
+
+![指标口径与使用说明](docs/images/screenshots/screenshot-07-metric-guide.jpg)
+
 ### 下载与源码
 
-- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.1-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
+- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.2-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
 - **修改功能**：React / TypeScript 原始代码在 [`source/`](source/)，环境、构建与重新打包方法见 [开发说明](docs/DEVELOPMENT.md)。
 - **下载模板**：[广告报表模板](templates/ads-report-template.csv) · [产品映射表模板](templates/product-mapping-template.csv)。
 
@@ -192,6 +202,11 @@ walmart-ads-trends/
 
 ### 最近更新
 
+**V1.2.2（2026-11-10）**
+
+- 新增页脚折叠式指标说明及卡片入口，区分30天归因模型、筛选日期和件数/订单转化率；统一相关标签，计算公式保持不变。
+
+
 **V1.2.1（2026-11-09）**
 
 - 浏览器标签图标更换为本地 PNG 图标，源码和静态部署包同步更新。
@@ -200,7 +215,7 @@ walmart-ads-trends/
 **V1.2.0（2026-11-09）**
 
 - 新增时间段对比：3 / 7 / 30 天、完整自然月和两个自定义区间。
-- 每个 Item ID 可展开花费、销售额、ROAS、CTR、平均 CPC、转化率、曝光、售出件数、加购物车、详情页浏览。
+- 每个 Item ID 可展开花费、销售额、ROAS、CTR、平均 CPC、件数转化率、曝光、售出件数、加购物车、详情页浏览。
 - 显示两个时间段的数值、差值、变化率、红绿箭头与运营解读，并处理无数据、零基期和区间覆盖提示。
 - CSV 按字段名自动识别，列顺序可调整；新增缺失和重复字段校验，支持实际 Clicks。
 
@@ -266,10 +281,10 @@ No sign-up, no Node.js, no server. Your report and mapping files are read and an
 | --- | --- | --- |
 | 📤 | Upload ads report | Drag-and-drop or pick a Walmart CSV; columns are matched by header name and can be reordered |
 | 🗺️ | Upload product mapping | Fields: category, backend SKU, Item ID, SKU; enables category / backend SKU / SKU analysis |
-| 📊 | Overview | 8 KPI cards: total ad spend, total sales (30-day attribution), overall ROAS, average CTR, average CPC, 30-day conversion rate, add-to-cart, product detail page views |
+| 📊 | Overview | 8 KPI cards: total ad spend, total sales (30-day attribution), overall ROAS, average CTR, average CPC, unit-based conversion rate, add-to-cart, product detail page views |
 | 🧩 | Placement breakdown | Homepage, Carousel and Search In-grid, each with 8 core metrics; plus a placement share pie chart and a comparison bar chart |
-| 📈 | Trend comparison | 10 metrics (spend, sales, ROAS, CTR, average CPC, conversion rate, impressions, units sold, add-to-cart, PDP views) as line charts, by day / week / month |
-| 🏆 | Performance ranking | Every Item ID ranked by attributed sales: spend, sales, units sold, ROAS, CTR, conversion rate |
+| 📈 | Trend comparison | 10 metrics (spend, sales, ROAS, CTR, average CPC, unit-based conversion rate, impressions, units sold, add-to-cart, PDP views) as line charts, by day / week / month |
+| 🏆 | Performance ranking | Every Item ID ranked by attributed sales: spend, sales, units sold, ROAS, CTR, unit-based conversion rate |
 | 💡 | Quick insights | Auto-computed for the current filter: sales leader, best efficiency, top contributing placement, data coverage |
 | 🗓️ | Date filter | Custom range, plus Last 7 days / Last 30 days / All shortcuts |
 | 🔄 | Period comparison | Compare 3 / 7 / 30-day periods, complete calendar months or two custom ranges; expand each item to see all 10 metrics, absolute changes and percentage changes |
@@ -296,10 +311,15 @@ This is a pre-built static site. **No Node.js, no `pnpm` needed** — any static
 **Any static server**
 
 1. Upload the repo files to the site directory (e.g. `Walmart Trends`).
-2. After extracting, `index.html`, `assets/`, `templates/`, `favicon.svg` and `og.png` should sit directly in that directory — no extra same-name subfolder.
+2. After extracting, `index.html`, `assets/`, `templates/`, `favicon.png`, `favicon.svg` and `og.png` should sit directly in that directory — no extra same-name subfolder.
 3. Visit the URL and hard-refresh with `Ctrl+F5`; if the old page still shows, clear the server / CDN page cache for that URL.
 
 ### What's new
+
+**V1.2.2 (2026-11-10)**
+
+- Added a collapsible footer guide with CSV metric sources, formulas and caveats. Attribution windows are distinguished from selected dates; conversion is clearly unit-based, not order-based. Calculations are unchanged.
+
 
 **V1.2.1 (2026-11-09)**
 
@@ -333,9 +353,9 @@ No. Reports and mapping files are read and analyzed only in your browser and gon
 
 ### Download and development
 
-- Download `walmart-ads-trends-v1.2.1-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
+- Download `walmart-ads-trends-v1.2.2-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
 - Editable React / TypeScript files are in [`source/`](source/). See [development instructions](docs/DEVELOPMENT.md) for building and packaging.
-- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.1 (2026-11-09).
+- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.2 (2026-11-10).
 
 ### Feedback
 

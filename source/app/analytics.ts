@@ -64,8 +64,8 @@ export const METRICS: Record<
     format: (v) => formatMoney(v),
   },
   sales: {
-    label: "30 天归因销售额",
-    shortLabel: "销售额",
+    label: "归因销售额（30天模型）",
+    shortLabel: "归因销售额",
     color: "#12a878",
     value: (a) => a.sales,
     format: (v) => formatMoney(v),
@@ -92,8 +92,8 @@ export const METRICS: Record<
     format: (v) => formatMoney(v),
   },
   conversion: {
-    label: "30 天转化率",
-    shortLabel: "转化率",
+    label: "件数转化率（30天模型）",
+    shortLabel: "件数转化率",
     color: "#e9556f",
     value: (a) => safeDivide(a.units, a.clicks) * 100,
     format: (v) => `${v.toFixed(2)}%`,
@@ -106,14 +106,14 @@ export const METRICS: Record<
     format: (v) => formatNumber(v),
   },
   units: {
-    label: "30 天售出件数",
+    label: "归因售出件数（30天模型）",
     shortLabel: "售出件数",
     color: "#12a878",
     value: (a) => a.units,
     format: (v) => formatNumber(v),
   },
   addToCart: {
-    label: "30 天加购物车数量",
+    label: "加购物车（30天模型字段）",
     shortLabel: "加购物车",
     color: "#d57b00",
     value: (a) => a.addToCart,

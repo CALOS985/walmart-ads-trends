@@ -110,6 +110,6 @@ export function changeInterpretation(key: MetricKey, direction: ReturnType<typeo
   if (key === "spend") return up ? "投入增加，结合回报判断" : "投入减少，结合回报判断";
   if (key === "roas") return up ? "投入回报提升" : "投入回报回落";
   if (key === "ctr") return up ? "点击效率提升" : "点击效率回落";
-  if (key === "conversion") return up ? "转化效率提升" : "转化效率回落";
+  if (key === "conversion") return up ? "件数转化率提升" : "件数转化率回落";
   return up ? "规模增加，结合效率判断" : "规模减少，结合效率判断";
 }

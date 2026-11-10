@@ -38,7 +38,7 @@ python scripts/verify_publication.py
 python scripts/package_release.py
 ```
 
-`release/walmart-ads-trends-v1.2.1-static.zip` 直接使用仓库根目录的已构建成品。
+`release/walmart-ads-trends-v1.2.2-static.zip` 直接使用仓库根目录的已构建成品。
 源码修改并构建后，用以下命令打包新产物：
 
 ```bash
@@ -72,3 +72,9 @@ Deploy the contents of `source/dist/`, or package them with `python scripts/pack
 - `source/app/comparison.ts`：纯函数日期区间、逐 Item 汇总、差值与变化率。
 - `source/app/period-comparison.tsx` / `.css`：时间段对比界面。
 - `source/tests/analytics.test.ts`：列序变化、加权比率、跨月日期、零基期与缺失数据等逻辑测试。
+
+## V1.2.2 指标说明模块
+
+- `source/app/metric-definitions.ts`：指标来源、公式与说明。
+- `source/app/metric-guide.tsx` / `.css`：页脚折叠说明与卡片入口样式。
+- 完整口径文字见 [METRICS.md](METRICS.md)。

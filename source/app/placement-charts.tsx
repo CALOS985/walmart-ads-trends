@@ -16,7 +16,7 @@ const PLACEMENT_METRICS: Record<
   { label: string; currency: boolean }
 > = {
   spend: { label: "总广告花费", currency: true },
-  sales: { label: "总销售额", currency: true },
+  sales: { label: "归因销售额", currency: true },
   addToCart: { label: "加购物车数量", currency: false },
   pdpViews: { label: "详情页浏览", currency: false },
 };

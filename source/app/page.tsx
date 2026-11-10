@@ -10,6 +10,8 @@ import {
 } from "react";
 import { PlacementCharts } from "./placement-charts";
 import { PeriodComparison } from "./period-comparison";
+import { MetricGuide } from "./metric-guide";
+import { ATTRIBUTION_NOTE, UNIT_CONVERSION_NOTE, CLICK_NOTE } from "./metric-definitions";
 import type { AdRecord, Aggregate, AnalysisDimension, Granularity, MetricKey, ProductMapping } from "./analytics";
 import { METRICS, safeDivide, emptyAggregate, addRecord, addAggregate, formatMoney, formatNumber, toIsoDate, formatShortDate } from "./analytics";
 import { parseReportDate, parseAdvertisingCsv, parseProductMappingCsv, readCsvFile } from "./csv";
@@ -196,6 +198,16 @@ export default function Home() {
   const [uploadError, setUploadError] = useState("");
   const [mappingError, setMappingError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [metricGuideOpen, setMetricGuideOpen] = useState(false);
+
+  function showMetricGuide() {
+    setMetricGuideOpen(true);
+    requestAnimationFrame(() => {
+      const guide = document.getElementById("metric-guide");
+      guide?.scrollIntoView({ behavior: "instant", block: "start" });
+      guide?.querySelector("summary")?.focus({ preventScroll: true });
+    });
+  }
 
   useEffect(() => {
     function closeItemFilterOnOutsideClick(event: PointerEvent) {
@@ -787,19 +799,29 @@ export default function Home() {
           </span>
         </section>
 
+        <p className="metric-context-note">
+          <strong>口径提示</strong>
+          <span>“30天”是后台归因模型，统计范围由所选日期决定；件数转化率 = 归因售出件数 ÷ 点击次数 × 100%，不是订单转化率。</span>
+          <a href="#metric-guide" onClick={event => { event.preventDefault(); showMetricGuide(); }}>查看指标口径与使用说明 ↓</a>
+        </p>
+
         <section className="kpi-grid">
           <KpiCard
             tone="blue"
             label="总广告花费"
             value={formatMoney(total.spend)}
-            detail={`${formatNumber(total.clicks)} 次折算点击`}
+            detail={`${formatNumber(total.clicks)} 次计算用点击`}
+            info={CLICK_NOTE}
+            onShowGuide={showMetricGuide}
             icon="$"
           />
           <KpiCard
             tone="green"
-            label="总销售额"
+            label="归因销售额（30天模型）"
             value={formatMoney(total.sales)}
-            detail="30 天归因销售收入"
+            detail="按所选日期汇总 · 非最近30天"
+            info={ATTRIBUTION_NOTE}
+            onShowGuide={showMetricGuide}
             icon="↗"
           />
           <KpiCard
@@ -825,23 +847,25 @@ export default function Home() {
           />
           <KpiCard
             tone="red"
-            label="30 天转化率"
+            label="件数转化率"
             value={`${(safeDivide(total.units, total.clicks) * 100).toFixed(2)}%`}
-            detail={`${formatNumber(total.units)} 件售出`}
+            detail={`${formatNumber(total.units)} 件归因售出 · 非订单转化率`}
+            info={UNIT_CONVERSION_NOTE}
+            onShowGuide={showMetricGuide}
             icon="✓"
           />
           <KpiCard
             tone="amber"
             label="加购物车数量"
             value={formatNumber(total.addToCart)}
-            detail="30 天总加购"
+            detail="30天模型字段 · 总加购优先"
             icon="＋"
           />
           <KpiCard
             tone="cyan"
             label="详情页浏览"
             value={formatNumber(total.pdpViews)}
-            detail="30 天商品详情页浏览"
+            detail="广告商品 · 30天模型"
             icon="◎"
           />
         </section>
@@ -860,11 +884,11 @@ export default function Home() {
                 <tr>
                   <th>广告版位</th>
                   <th>总广告花费</th>
-                  <th>总销售额</th>
+                  <th>归因销售额</th>
                   <th>整体 ROAS</th>
                   <th>平均 CTR</th>
                   <th>平均 CPC</th>
-                  <th>30 天转化率</th>
+                  <th>件数转化率</th>
                   <th>加购物车数量</th>
                   <th>详情页浏览</th>
                 </tr>
@@ -1057,11 +1081,11 @@ export default function Home() {
                   <tr>
                     <th>{dimensionConfig.label}</th>
                     <th>广告花费</th>
-                    <th>销售额</th>
+                    <th>归因销售额</th>
                     <th>售出件数</th>
                     <th>ROAS</th>
                     <th>CTR</th>
-                    <th>转化率</th>
+                    <th>件数转化率</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1181,6 +1205,8 @@ export default function Home() {
           </aside>
         </div>
 
+        <MetricGuide open={metricGuideOpen} onOpenChange={setMetricGuideOpen} />
+
         <div className="dashboard-notice">
           <span className="brand-mark mini" aria-hidden="true">
             <i />
@@ -1232,17 +1258,27 @@ function KpiCard({
   value,
   detail,
   icon,
+  info,
+  onShowGuide,
 }: {
   tone: string;
   label: string;
   value: string;
   detail: string;
   icon: string;
+  info?: string;
+  onShowGuide?: () => void;
 }) {
   return (
     <article className={`kpi-card ${tone}`}>
       <div>
-        <span className="kpi-label">{label}</span>
+        <div className="kpi-label-row">
+          <span className="kpi-label">{label}</span>
+          {info && <a className="kpi-info-link" href="#metric-guide" title={info}
+            aria-label={`${label}口径说明：${info}`} onClick={event => {
+              if (onShowGuide) { event.preventDefault(); onShowGuide(); }
+            }}>ⓘ</a>}
+        </div>
         <strong>{value}</strong>
         <small>{detail}</small>
       </div>

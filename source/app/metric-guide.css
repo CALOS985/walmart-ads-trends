@@ -1,0 +1,58 @@
+.metric-context-note {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin: -4px 0 16px;
+  padding: 10px 14px;
+  border: 1px solid #dce8f5;
+  border-radius: 8px;
+  color: #5f7289;
+  background: #eef5fc;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.metric-context-note > strong { color: #355d8b; font-size: 12px; }
+.metric-context-note a, .metric-guide-reference a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+.kpi-label-row { display: flex; align-items: baseline; gap: 5px; }
+.kpi-info-link { color: var(--blue); text-decoration: none; font-size: 13px; flex: 0 0 auto; }
+.kpi-info-link:focus-visible, .metric-context-note a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 2px; }
+.metric-guide { margin-top: 22px; border: 1px solid #d9e4f1; border-radius: 12px; background: #fff; box-shadow: var(--shadow); scroll-margin-top: 84px; }
+.metric-guide > summary { display: flex; align-items: center; gap: 12px; padding: 18px 20px; color: #284663; list-style: none; cursor: pointer; }
+.metric-guide > summary::-webkit-details-marker { display: none; }
+.metric-guide > summary:hover { background: #f5f9fe; border-radius: 12px; }
+.metric-guide > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 12px; }
+.metric-guide-mark { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: #eaf3fc; color: var(--blue); font-size: 20px; }
+.metric-guide > summary strong { display: block; font-size: 15px; }
+.metric-guide > summary small { display: block; margin-top: 5px; color: #7a8a9d; font-size: 11px; line-height: 1.6; }
+.metric-guide-action { display: flex; gap: 10px; align-items: center; margin-left: auto; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+.metric-guide-action i { font-size: 20px; font-style: normal; transition: transform .18s ease; }
+.metric-guide[open] .metric-guide-action i { transform: rotate(180deg); }
+.metric-guide-body { padding: 20px; border-top: 1px solid #e4ebf3; }
+.metric-guide-body h3 { margin: 0 0 9px; font-size: 14px; color: #304d69; }
+.metric-guide-body p { margin: 7px 0; color: #62758c; font-size: 12px; line-height: 1.85; }
+.metric-guide-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
+.metric-guide-notes section { padding: 16px; background: #f2f7fd; border-radius: 8px; border-left: 3px solid #5a8bc3; }
+.metric-guide-table-wrap { overflow-x: auto; margin: 12px 0 24px; border: 1px solid #e0e7ef; border-radius: 8px; }
+.metric-guide-table { width: 100%; min-width: 830px; table-layout: fixed; border-collapse: collapse; text-align: left; }
+.metric-guide-table th, .metric-guide-table td { padding: 14px 13px; border-bottom: 1px solid #e7edf4; white-space: normal; overflow-wrap: anywhere; font-size: 12px; line-height: 1.8; vertical-align: top; }
+.metric-guide-table th { color: #3d5672; font-weight: 600; }
+.metric-guide-table thead th { background: #f3f6fb; font-size: 11px; }
+.metric-guide-table th:nth-child(1) { width: 16%; }
+.metric-guide-table th:nth-child(2) { width: 24%; }
+.metric-guide-table th:nth-child(3) { width: 23%; }
+.metric-guide-table th:nth-child(4) { width: 37%; }
+.metric-guide-table td { color: #63768c; }
+.metric-guide-table code { display: block; margin-bottom: 4px; color: #486582; font-size: 11px; }
+.metric-guide-usage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; }
+.metric-guide-body .metric-guide-reference { margin-top: 22px; padding-top: 12px; border-top: 1px solid #e4ebf3; color: #8491a2; font-size: 11px; }
+@media (max-width: 700px) {
+  .metric-guide > summary { gap: 8px; padding: 15px 12px; }
+  .metric-guide > summary strong { font-size: 14px; }
+  .metric-guide-action > span { display: none; }
+  .metric-guide-body { padding: 14px 12px; }
+  .metric-guide-notes, .metric-guide-usage { grid-template-columns: 1fr; }
+  .kpi-label-row { align-items: flex-start; }
+  .kpi-label-row .kpi-label { line-height: 1.5; }
+  .kpi-card small { white-space: normal; line-height: 1.6; }
+}
