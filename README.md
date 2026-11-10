@@ -172,7 +172,7 @@ Walmart 广告趋势看板是一个纯静态的单页应用。打开页面，上
 
 ### 下载与源码
 
-- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.2-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
+- **直接部署**：到 [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) 下载 `walmart-ads-trends-v1.2.3-static.zip`，解压到网站目录即可。发行页面另附 SHA-256 校验文件。
 - **修改功能**：React / TypeScript 原始代码在 [`source/`](source/)，环境、构建与重新打包方法见 [开发说明](docs/DEVELOPMENT.md)。
 - **下载模板**：[广告报表模板](templates/ads-report-template.csv) · [产品映射表模板](templates/product-mapping-template.csv)。
 
@@ -201,6 +201,11 @@ walmart-ads-trends/
 ```
 
 ### 最近更新
+
+**V1.2.3（2026-11-10）**
+
+- 上传提示补充：可从网站下载模板，并参照示例配置和保存沃尔玛广告后台 Custom Reports 字段模板。
+
 
 **V1.2.2（2026-11-10）**
 
@@ -316,6 +321,11 @@ This is a pre-built static site. **No Node.js, no `pnpm` needed** — any static
 
 ### What's new
 
+**V1.2.3 (2026-11-10)**
+
+- Expanded the upload hint to explain downloading a template and saving a matching Custom Reports field configuration.
+
+
 **V1.2.2 (2026-11-10)**
 
 - Added a collapsible footer guide with CSV metric sources, formulas and caveats. Attribution windows are distinguished from selected dates; conversion is clearly unit-based, not order-based. Calculations are unchanged.
@@ -353,9 +363,9 @@ No. Reports and mapping files are read and analyzed only in your browser and gon
 
 ### Download and development
 
-- Download `walmart-ads-trends-v1.2.2-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
+- Download `walmart-ads-trends-v1.2.3-static.zip` from [Releases](https://github.com/CALOS985/walmart-ads-trends/releases/latest) for direct static hosting.
 - Editable React / TypeScript files are in [`source/`](source/). See [development instructions](docs/DEVELOPMENT.md) for building and packaging.
-- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.2 (2026-11-10).
+- First GitHub release: 2026-11-08 (V1.1.0). Current version: V1.2.3 (2026-11-10).
 
 ### Feedback
 

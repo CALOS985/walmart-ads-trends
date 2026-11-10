@@ -38,7 +38,7 @@ python scripts/verify_publication.py
 python scripts/package_release.py
 ```
 
-`release/walmart-ads-trends-v1.2.2-static.zip` 直接使用仓库根目录的已构建成品。
+`release/walmart-ads-trends-v1.2.3-static.zip` 直接使用仓库根目录的已构建成品。
 源码修改并构建后，用以下命令打包新产物：
 
 ```bash

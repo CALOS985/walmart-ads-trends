@@ -551,7 +551,7 @@ export default function Home() {
               </strong>
               <p>
                 {fileMeta.isDemo
-                  ? "支持 Walmart CSV，可拖拽或选择文件；按字段名称自动识别，列顺序可自由调整，请保留模板字段名称。"
+                  ? "支持 Walmart CSV，可拖拽或选择文件；按字段名称自动识别，列顺序可自由调整，请保留模板字段名称。导入模板可以从网站下载，并根据示例模板配置好沃尔玛广告后台Custom Reports字段模板并保存"
                   : `${formatNumber(fileMeta.rows)} 行数据 · ${itemIds.length} 个 Item ID · ${formatShortDate(bounds.min)}—${formatShortDate(bounds.max)}`}
               </p>
             </div>
